@@ -22,7 +22,7 @@ def check_path_exists(path):
 
 def pytest_generate_tests(metafunc):
     val = metafunc.config.getoption('--fw-pkg')
-    if 'fw_pkg_name' in metafunc.fixturenames:
+    if 'fw_pkg_name' in metafunc.fixturenames and val is not None:
         metafunc.parametrize('fw_pkg_name', [val], scope="module")
 
 @pytest.fixture(scope='module')
