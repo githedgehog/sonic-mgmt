@@ -1,0 +1,59 @@
+"vms-kvm-t0":
+  "acl":
+    - "test_stress_acl.py"
+  "bgp":
+    - "test_bgp_fact.py"
+    - "test_bgp_gr_helper.py"
+    - "test_bgp_slb.py"
+    - "test_bgp_speaker.py"
+  "cacl":
+    - "test_cacl_function.py"
+  "console":
+    - "test_console_availability.py"
+  "dhcp_relay":
+    - "test_dhcp_relay.py"
+    - "test_dhcpv6_relay.py"
+  "generic_config_updater":
+    - "test_ntp.py"
+  "http":
+    - "test_http_copy.py"
+  "lldp":
+    - "test_lldp.py"
+  "ntp":
+    - "test_ntp.py"
+  "pc":
+    - "test_po_update.py"
+  "platform_tests":
+    - "test_advanced_reboot.py"
+    - "test_cont_warm_reboot.py"
+  "radv":
+    - "test_radv_ipv6_ra.py"
+  "route":
+    - "test_default_route.py"
+    - "test_route_flap.py"
+    - "test_route_perf.py"
+    - "test_static_route.py"
+  "scp":
+    - "test_scp_copy.py"
+  "snmp":
+    - "test_snmp_cpu.py"
+    - "test_snmp_default_route.py"
+    - "test_snmp_interfaces.py"
+    - "test_snmp_lldp.py"
+    - "test_snmp_loopback.py"
+    - "test_snmp_pfc_counters.py"
+    - "test_snmp_queue.py"
+  "ssh":
+    - "test_ssh_ciphers.py"
+    - "test_ssh_limit.py"
+    - "test_ssh_stress.py"
+  "tacacs":
+    - "test_accounting.py"
+    - "test_authorization.py"
+    - "test_jit_user.py"
+    - "test_ro_user.py"
+    - "test_rw_user.py"
+  "upgrade_path":
+    - "test_upgrade_path.py"
+  "root_dir":
+    - "test_interfaces.py"
