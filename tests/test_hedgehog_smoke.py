@@ -71,49 +71,54 @@ def test_container_state(setup, name):
 
 
 def test_bgp_smoke(setup):
-    if not sonic_ctrs['bgp']['status']:
-        pytest.skip("SKIP, BGP is not running")
-
     # setup, get init bgp conf
     duthost = setup['duthost']
+    config = setup['config']
+    is_bgpd_proc = is_process_running(duthost, "bgpd")
 
-    init_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
-    cmd_to_restore = ["vtysh -c \"configure terminal\"", "-c \"no router bgp\""]
-    [cmd_to_restore.append("-c \"{}\"".format(init_bgp_conf[i])) for i in range(len(init_bgp_conf))]
-    try:
-        # remove current bgp conf
-        duthost.command("vtysh -c \"configure terminal\" \
-                                   -c \"no router bgp\"", module_ignore_errors=True)
+    # check container and process
+    if config and config['INCLUDE_FRR_BGP'] == 'n':
+        pytest_assert(not is_bgpd_proc, "There is running 'bgpd' process, but shouldn't be.")
+    # note: bgp is running in community by default ('not config' means community)
+    elif not config or (config and config['INCLUDE_FRR_BGP'] == 'y'):
+        # setup: get init bgp conf, prepare command for restore init config
+        init_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
+        cmd_to_restore = ["vtysh -c \"configure terminal\"", "-c \"no router bgp\""]
+        [cmd_to_restore.append("-c \"{}\"".format(init_bgp_conf[i])) for i in range(len(init_bgp_conf))]
+        try:
+            # remove current bgp conf
+            duthost.command("vtysh -c \"configure terminal\" \
+                                       -c \"no router bgp\"", module_ignore_errors=True)
 
-        # configure bgp router and neighbor
-        dut_asn = 1234
-        neighbor_asn = 4321
-        neighbor_ip = '1.1.1.1'
-        duthost.command("vtysh -c \"configure terminal\" \
-                                -c \"router bgp {dut_asn}\" \
-                                -c \"neighbor PEER_V4 peer-group\" \
-                                -c \"neighbor {neighbor_ip} remote-as {neighbor_asn}\" \
-                                -c \"neighbor {neighbor_ip} peer-group PEER_V4\"".format(dut_asn=dut_asn,
-                                                                                         neighbor_asn=neighbor_asn,
-                                                                                         neighbor_ip=neighbor_ip))
+            # configure bgp router and neighbor
+            dut_asn = 1234
+            neighbor_asn = 4321
+            neighbor_ip = '1.1.1.1'
+            duthost.command("vtysh -c \"configure terminal\" \
+                                    -c \"router bgp {dut_asn}\" \
+                                    -c \"neighbor PEER_V4 peer-group\" \
+                                    -c \"neighbor {neighbor_ip} remote-as {neighbor_asn}\" \
+                                    -c \"neighbor {neighbor_ip} peer-group PEER_V4\"".format(dut_asn=dut_asn,
+                                                                                             neighbor_asn=neighbor_asn,
+                                                                                             neighbor_ip=neighbor_ip))
 
-        # verify that new bgp conf is really applied
-        result = duthost.command('vtysh -c \"show bgp summary json\"')['stdout']
-        result_json = json.loads(result)['ipv4Unicast']
+            # verify that new bgp conf is really applied
+            result = duthost.command('vtysh -c \"show bgp summary json\"')['stdout']
+            result_json = json.loads(result)['ipv4Unicast']
 
-        pytest_assert(result_json['as'] == dut_asn, "dut asn is not applied")
-        pytest_assert(result_json['peers'][neighbor_ip]['remoteAs'] == neighbor_asn,
-                      "Neighbor configuration is not applied")
-    finally:
-        # restore bgp configuration
-        duthost.command(' '.join(cmd_to_restore))
+            pytest_assert(result_json['as'] == dut_asn, "dut asn is not applied")
+            pytest_assert(result_json['peers'][neighbor_ip]['remoteAs'] == neighbor_asn,
+                          "Neighbor configuration is not applied")
+        finally:
+            # restore bgp configuration
+            duthost.command(' '.join(cmd_to_restore))
 
-        # wait some time to establish bgp session with neighbor if any
-        time.sleep(20)
+            # wait some time to establish bgp session with neighbor if any
+            time.sleep(20)
 
-        # compare restored configuration with init
-        restore_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
-        pytest_assert(init_bgp_conf == restore_bgp_conf, "bgp configuration is not same as init bgp configuration")
+            # compare restored configuration with init
+            restore_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
+            pytest_assert(init_bgp_conf == restore_bgp_conf, "bgp configuration is not same as init bgp configuration")
 
 
 def test_bfd_smoke(setup):
