@@ -162,6 +162,57 @@ def test_bfd_smoke(setup):
                                     -c \"no profile {bfd_profile}\"".format(bfd_profile=bfd_profile, peer_ip=peer_ip))
 
 
+def test_vrrp_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    is_vrrpd_proc = is_process_running(duthost, "vrrpd")
+
+    # check container and process
+    if sonic_ctrs['bgp']['status'] and not config:
+        pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, 'vrrpd' is not running by default.")
+    elif not sonic_ctrs['bgp']['status']:
+        pytest_assert(not is_vrrpd_proc, "There is running 'vrrpd' process, but shouldn't be.")
+    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_VRRP'] == 'n':
+        pytest_assert(not is_vrrpd_proc, "There is running 'vrrpd' process, but shouldn't be.")
+    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_VRRP'] == 'y':
+        interface = "lo"
+        vrid = 111
+        version = 2
+        priority = 22
+        try:
+            # verify vrrp process
+            pytest_assert(is_vrrpd_proc, "There is no running vrrpd process, but should be.")
+
+            # configure vrrp version/priority for interface
+            duthost.command("vtysh -c \"configure terminal\" \
+                                    -c \"interface {interface}\" \
+                                    -c \"vrrp {vrid} version {version}\" \
+                                    -c \"vrrp {vrid} priority {priority}\"".format(interface=interface, vrid=vrid,
+                                                                                   version=version, priority=priority))
+
+            # verify vrrp config is applied
+            result = duthost.command("vtysh -c \"show vrrp json\"")['stdout']
+            import pdb; pdb.set_trace()
+            result_json = json.loads(result)[0]  # json inside array
+            pytest_assert(result_json['vrid'] == vrid,
+                          "VRID is not matched, expected: '{}', actual: '{}'".format(vrid, result_json['vrid']))
+            pytest_assert(result_json['version'] == version,
+                          "VRRP version is not matched, expected: '{}', actual: '{}'".format(version,
+                                                                                             result_json['version']))
+            pytest_assert(result_json['interface'] == interface,
+                          "Interface is not matched, expected: '{}', actual: '{}'".format(interface,
+                                                                                          result_json['interface']))
+        finally:
+            # cleanup: remove test bfd profile
+            duthost.command("vtysh -c \"configure terminal\" \
+                                                -c \"interface {interface}\" \
+                                                -c \"no vrrp {vrid} priority {priority}\" \
+                                                -c \"no vrrp {vrid} version {version}\"".format(interface=interface,
+                                                                                                vrid=vrid,
+                                                                                                version=version,
+                                                                                                priority=priority))
+
+
 def is_container_running(duthost, name):
     # can't use community method from sonic.py, error:
     # UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026' in position 183: ordinal not in range(128)
