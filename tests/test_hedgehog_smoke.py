@@ -35,14 +35,15 @@ sonic_ctrs = {
 @pytest.fixture(scope="module", autouse=True)
 def setup(duthosts, rand_one_dut_hostname):
     duthost = duthosts[rand_one_dut_hostname]
-
+    setup_info = {'duthost': duthost}
     # check metadata file exist, by default all ctrs are Up
     check_file_on_dut = duthost.shell("[ -f {} ]".format(path_to_metadata), module_ignore_errors=True)
     if check_file_on_dut['rc'] == 0:
         data = duthost.shell("cat {}".format(path_to_metadata))['stdout']
         metadata = yaml.safe_load(data)
-        config = metadata['Configuration']
 
+        config = metadata['Configuration']
+        setup_info['config'] = config
         # update ctrs status according to metadata
         sonic_ctrs['telemetry']['status'] = True if config['INCLUDE_SYSTEM_TELEMETRY'] == 'y' else False
         sonic_ctrs['snmp']['status'] = True if config['INCLUDE_SNMP'] == 'y' else False
@@ -55,13 +56,10 @@ def setup(duthosts, rand_one_dut_hostname):
             sonic_ctrs['bgp']['status'] = True
         else:
             sonic_ctrs['bgp']['status'] = False
+    else:
+        setup_info['config'] = False
 
     logger.info("Sonic containers map: {}".format(sonic_ctrs))
-
-    setup_info = {
-        'duthost': duthost
-    }
-
     logger.info('Setup_info: {}'.format(setup_info))
 
     yield setup_info
@@ -122,11 +120,65 @@ def test_bgp_smoke(setup):
         pytest_assert(init_bgp_conf == restore_bgp_conf, "bgp configuration is not same as init bgp configuration")
 
 
+def test_bfd_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    is_bfdd_proc = is_process_running(duthost, "bfdd")
+
+    # check container and process
+    if sonic_ctrs['bgp']['status'] and not config:
+        pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, bfdd is not running by default.")
+    elif not sonic_ctrs['bgp']['status']:
+        pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
+    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_BFD'] == 'n':
+        pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
+    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_BFD'] == 'y':
+        bfd_profile = "test_profile"
+        receive_interval = 111
+        peer_ip = "1.1.1.1"
+        try:
+            # verify bfdd process
+            pytest_assert(is_bfdd_proc, "There is no running bfdd process, but should be.")
+
+            # configure test profile and peer
+            duthost.command("vtysh -c \"configure terminal\" \
+                                    -c \"bfd\" \
+                                    -c \"profile {bfd_profile}\" \
+                                    -c \"receive-interval {receive_interval}\" \
+                                    -c \"no shutdown\" \
+                                    -c \"exit\" \
+                                    -c \"peer {peer_ip}\" \
+                                    -c \"profile {bfd_profile}\"".format(bfd_profile=bfd_profile,
+                                                                         receive_interval=receive_interval,
+                                                                         peer_ip=peer_ip))
+
+            # verify bfd config is really applied
+            result = duthost.command("vtysh -c \"show bfd peer {} json\"".format(peer_ip))['stdout']
+            result_json = json.loads(result)
+            pytest_assert(result_json['peer'] == peer_ip, "Peer: '{}' is missed".format(peer_ip))
+            pytest_assert(result_json['receive-interval'] == receive_interval,
+                          "Receive-interval is not the same as in profile")
+        finally:
+            # cleanup: remove test bfd profile
+            duthost.command("vtysh -c \"configure terminal\" \
+                                    -c \"bfd\" \
+                                    -c \"no peer {peer_ip}\" \
+                                    -c \"no profile {bfd_profile}\"".format(bfd_profile=bfd_profile, peer_ip=peer_ip))
+
+
 def is_container_running(duthost, name):
     # can't use community method from sonic.py, error:
     # UnicodeEncodeError: 'ascii' codec can't encode character u'\u2026' in position 183: ordinal not in range(128)
     state = duthost.shell("docker ps -f name=%s --format \{\{.Status\}\}" % name)['stdout_lines']
     if len(state) > 0:
+        return True
+    else:
+        return False
+
+
+def is_process_running(duthost, process):
+    result = duthost.shell("pidof {}".format(process), module_ignore_errors=True)['rc']
+    if result == 0:
         return True
     else:
         return False
