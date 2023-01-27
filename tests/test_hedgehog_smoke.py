@@ -122,13 +122,13 @@ def test_bfd_smoke(setup):
     is_bfdd_proc = is_process_running(duthost, "bfdd")
 
     # check container and process
-    if sonic_ctrs['bgp']['status'] and not config:
+    if not config:
         pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, bfdd is not running by default.")
     elif not sonic_ctrs['bgp']['status']:
         pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
-    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_BFD'] == 'n':
+    elif config and config['INCLUDE_FRR_BFD'] == 'n':
         pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
-    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_BFD'] == 'y':
+    elif config and config['INCLUDE_FRR_BFD'] == 'y':
         bfd_profile = "test_profile"
         receive_interval = 111
         peer_ip = "1.1.1.1"
