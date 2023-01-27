@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import time
 
 import pytest
@@ -76,7 +77,7 @@ def test_bgp_smoke(setup):
     config = setup['config']
     is_bgpd_proc = is_process_running(duthost, "bgpd")
 
-    # check container and process
+    # check process
     if config and config['INCLUDE_FRR_BGP'] == 'n':
         pytest_assert(not is_bgpd_proc, "There is running 'bgpd' process, but shouldn't be.")
     # note: bgp is running in community by default ('not config' means community)
@@ -126,7 +127,7 @@ def test_bfd_smoke(setup):
     config = setup['config']
     is_bfdd_proc = is_process_running(duthost, "bfdd")
 
-    # check container and process
+    # check process
     if not config:
         pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, bfdd is not running by default.")
     elif not sonic_ctrs['bgp']['status']:
@@ -172,7 +173,7 @@ def test_vrrp_smoke(setup):
     config = setup['config']
     is_vrrpd_proc = is_process_running(duthost, "vrrpd")
 
-    # check container and process
+    # check process
     if not config:
         pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, 'vrrpd' is not running by default.")
     elif config and config['INCLUDE_FRR_VRRP'] == 'n':
@@ -195,7 +196,6 @@ def test_vrrp_smoke(setup):
 
             # verify vrrp config is applied
             result = duthost.command("vtysh -c \"show vrrp json\"")['stdout']
-            import pdb; pdb.set_trace()
             result_json = json.loads(result)[0]  # json inside array
             pytest_assert(result_json['vrid'] == vrid,
                           "VRID is not matched, expected: '{}', actual: '{}'".format(vrid, result_json['vrid']))
@@ -216,6 +216,33 @@ def test_vrrp_smoke(setup):
                                                                                                 priority=priority))
 
 
+def test_syslog_smoke(setup):
+    # setup, get init bgp conf
+    duthost = setup['duthost']
+    config = setup['config']
+    is_rsyslogd_proc = is_process_running(duthost, "rsyslogd")
+
+    # check process
+    if config and config['INCLUDE_SYSLOG'] == 'n':
+        pytest_assert(not is_rsyslogd_proc, "There is running 'rsyslogd' process, but shouldn't be.")
+    # note: syslog is running in community by default ('not config' means community)
+    elif not config or (config and config['INCLUDE_SYSLOG'] == 'y'):
+        # setup
+        fake_syslog_server_ip = "1.1.1.1"
+        try:
+            # verify rsyslogd process
+            pytest_assert(is_rsyslogd_proc, "There is no running vrrpd process, but should be.")
+            # add fake syslog ip server verify it is added
+            duthost.shell("sudo config syslog add {}".format(fake_syslog_server_ip), module_ignore_errors=True)
+            syslog_servers = duthost.shell("show runningconfiguration syslog", module_ignore_errors=True)
+            all_ips = re.findall(r'\[([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\]', syslog_servers['stdout'])
+            pytest_assert(fake_syslog_server_ip in all_ips,
+                          "Syslog server ip is not applied, available ips: {}".format(all_ips))
+        finally:
+            # cleanup:
+            duthost.shell("sudo config syslog del {}".format(fake_syslog_server_ip), module_ignore_errors=True)
+
+
 def test_database_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
@@ -232,6 +259,7 @@ def test_database_smoke(setup):
 
     logger.info("config DB have {} records.".format(len(res_check_config_db['stdout_lines'])))
 
+
 def test_syncd_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
@@ -242,6 +270,7 @@ def test_syncd_smoke(setup):
     check_container_restarts_helper(duthost, container)
 
     pytest_assert(is_process_running(duthost, "syncd"), "There is no running syncd process.")
+
 
 def test_swss_smoke(setup):
     duthost = setup['duthost']
@@ -254,6 +283,7 @@ def test_swss_smoke(setup):
 
     pytest_assert(is_process_running(duthost, "orchagent"), "There is no running orchagent process.")
 
+
 def test_pmon_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
@@ -262,6 +292,7 @@ def test_pmon_smoke(setup):
     check_container_sanity_helper(config, container)
 
     check_container_restarts_helper(duthost, container)
+
 
 def get_uptime(duthost, hours = False, minutes = False, seconds = False, smooth = 0):
     '''
@@ -298,6 +329,7 @@ def is_process_running(duthost, process):
     else:
         return False
 
+
 def check_container_sanity_helper(config, container):
     if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
             sonic_ctrs[container]['status'] == False:
@@ -310,6 +342,7 @@ def check_container_sanity_helper(config, container):
             "There is no running {} container, but should be.".format(container))
 
     pytest_assert(sonic_ctrs['database']['status'], "{} container is not running.".format(container))
+
 
 def check_container_restarts_helper(duthost, container):
     events_file = container + "_events"
