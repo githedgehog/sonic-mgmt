@@ -15,20 +15,21 @@ pytestmark = [
 ]
 
 # mandatory: database, swss, syncd, pmon
+# bgp container is for FRR routing stack (just named bgp, actually bgp is in FRR)
 sonic_ctrs = {
-    "database": {"status": True},
-    "swss": {"status": True},
-    "syncd": {"status": True},
-    "pmon": {"status": True},
-    "telemetry": {"status": True},
-    "snmp": {"status": True},
-    "mgmt-framework": {"status": True},
-    "dhcp_relay": {"status": True},
-    "lldp": {"status": True},
-    "radv": {"status": True},
-    "gbsyncd": {"status": True},
-    "teamd": {"status": True},
-    "bgp": {"status": True}
+    "database":         {"status": True, "build_flag": "INCLUDE_DATABASE"},
+    "swss":             {"status": True, "build_flag": "INCLUDE_SWSS"},
+    "syncd":            {"status": True, "build_flag": "INCLUDE_SYNCD"},
+    "pmon":             {"status": True, "build_flag": "INCLUDE_PMON"},
+    "telemetry":        {"status": True, "build_flag": "INCLUDE_SYSTEM_TELEMETRY"},
+    "snmp":             {"status": True, "build_flag": "INCLUDE_SNMP"},
+    "mgmt-framework":   {"status": True, "build_flag": "INCLUDE_MGMT_FRAMEWORK"},
+    "dhcp_relay":       {"status": True, "build_flag": "INCLUDE_DHCP_RELAY"},
+    "lldp":             {"status": True, "build_flag": "INCLUDE_LLDP"},
+    "radv":             {"status": True, "build_flag": "INCLUDE_ROUTER_ADVERTISER"},
+    # "gbsyncd":          {"status": True, "build_fladflag": None}, # this container is only on VS image
+    "teamd":            {"status": True, "build_flag": "INCLUDE_TEAMD"},
+    "bgp":              {"status": True, "build_flag": "INCLUDE_ROUTING_STACK"}
 }
 
 
@@ -44,20 +45,12 @@ def setup(duthosts, rand_one_dut_hostname):
 
         config = metadata['Configuration']
         setup_info['config'] = config
-        # update ctrs status according to metadata
-        sonic_ctrs['telemetry']['status'] = True if config['INCLUDE_SYSTEM_TELEMETRY'] == 'y' else False
-        sonic_ctrs['snmp']['status'] = True if config['INCLUDE_SNMP'] == 'y' else False
-        sonic_ctrs['mgmt-framework']['status'] = True if config['INCLUDE_MGMT_FRAMEWORK'] == 'y' else False
-        sonic_ctrs['dhcp_relay']['status'] = True if config['INCLUDE_DHCP_RELAY'] == 'y' else False
-        sonic_ctrs['lldp']['status'] = True if config['INCLUDE_LLDP'] == 'y' else False
-        sonic_ctrs['teamd']['status'] = True if config['INCLUDE_TEAMD'] == 'y' else False
-        if config['INCLUDE_FRR_BFD'] == 'y' or config['INCLUDE_FRR_BGP'] == 'y' or config['INCLUDE_FRR_OSPF'] == 'y' \
-                or config['INCLUDE_FRR_PBR'] == 'y' or config['INCLUDE_FRR_VRRP'] == 'y':
-            sonic_ctrs['bgp']['status'] = True
-        else:
-            sonic_ctrs['bgp']['status'] = False
     else:
         setup_info['config'] = False
+
+    # update actual container status
+    for container in sonic_ctrs.keys():
+        sonic_ctrs[container]['Status'] = is_container_running(duthost, container)
 
     logger.info("Sonic containers map: {}".format(sonic_ctrs))
     logger.info('Setup_info: {}'.format(setup_info))
@@ -67,9 +60,12 @@ def setup(duthosts, rand_one_dut_hostname):
 
 @pytest.mark.parametrize("name", sonic_ctrs.keys())
 def test_container_state(setup, name):
-    duthost = setup['duthost']
-    expected_state = sonic_ctrs[name]["status"]
-    actual_state = is_container_running(duthost, name)
+    config = setup['config']
+    if config is False:
+        pytest.skip("SKIP: no build_metadata.yaml file. Cannot check expected state.")
+
+    expected_state = True if config[sonic_ctrs[name]['build_flag']] == "y" else False
+    actual_state = sonic_ctrs[name]['status']
     pytest_assert(actual_state == expected_state,
                   "{} actual state: {}, but expected: {}".format(name, actual_state, expected_state))
 
