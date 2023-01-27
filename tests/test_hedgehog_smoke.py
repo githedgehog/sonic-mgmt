@@ -50,7 +50,7 @@ def setup(duthosts, rand_one_dut_hostname):
 
     # update actual container status
     for container in sonic_ctrs.keys():
-        sonic_ctrs[container]['Status'] = is_container_running(duthost, container)
+        sonic_ctrs[container]['status'] = is_container_running(duthost, container)
 
     logger.info("Sonic containers map: {}".format(sonic_ctrs))
     logger.info('Setup_info: {}'.format(setup_info))
