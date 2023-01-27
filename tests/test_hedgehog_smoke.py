@@ -241,8 +241,15 @@ def test_database_smoke(setup):
     config = setup['config']
     container = "database"
 
-    if config[sonic_ctrs['database']['build_flag']] == "n":
-        pytest.skip("SKIP, database container is disabled on build")
+    if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
+            sonic_ctrs[container]['status'] == False:
+        pytest.skip("SKIP. database container is disabled on build.")
+    if config and config[sonic_ctrs[container]['build_flag']] == "n":
+        pytest_assert(sonic_ctrs[container]['status'] == False, \
+            "There is running {} container, but shouldn't be.".format(container))
+    if config and config[sonic_ctrs[container]['build_flag']] == "y":
+        pytest_assert(sonic_ctrs[container]['status'] == True, \
+            "There is no running {} container, but should be.".format(container))
 
     pytest_assert(sonic_ctrs['database']['status'], "database container is not running.")
 
