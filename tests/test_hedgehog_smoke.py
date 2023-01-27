@@ -273,6 +273,14 @@ def test_swss_smoke(setup):
 
     pytest_assert(is_process_running(duthost, "orchagent"), "There is no running orchagent process.")
 
+def test_pmon_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "pmon"
+
+    check_container_sanity_helper(config, container)
+
+    check_container_restarts_helper(duthost, container)
 
 def check_container_sanity_helper(config, container):
     if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
