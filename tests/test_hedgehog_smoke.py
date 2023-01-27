@@ -262,6 +262,18 @@ def test_syncd_smoke(setup):
 
     pytest_assert(is_process_running(duthost, "syncd"), "There is no running syncd process.")
 
+def test_swss_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "swss"
+
+    check_container_sanity_helper(config, container)
+
+    check_container_restarts_helper(duthost, container)
+
+    pytest_assert(is_process_running(duthost, "orchagent"), "There is no running orchagent process.")
+
+
 def check_container_sanity_helper(config, container):
     if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
             sonic_ctrs[container]['status'] == False:
