@@ -215,26 +215,6 @@ def test_vrrp_smoke(setup):
                                                                                                 version=version,
                                                                                                 priority=priority))
 
-def check_container_restarts_helper(duthost, container):
-    events_file = container + "_events"
-    uptime = get_uptime(duthost, hours=True, smooth=1)['stdout']
-
-    shell_get_events = "docker events --since {}h --filter container={} --filter event=restart > {} &"\
-        .format(uptime, container, events_file)
-    shell_read_events_file = "[ -e {} ] && cat {}".format(events_file, events_file)
-    shell_clear_events_file = "[ -e {} ] && rm -f {}".format(events_file, events_file)
-
-    res_get_events = duthost.shell(shell_get_events, module_ignore_errors=True)
-    pytest_assert(res_get_events['failed'] == False, "Error while calling docker events.")
-
-    res_read_events_file = duthost.shell(shell_read_events_file, module_ignore_errors=True)
-    pytest_assert(res_read_events_file['failed'] == False, "Error while reading event file.")
-
-    restart_count = len(res_read_events_file['stdout_lines'])
-    pytest_assert(restart_count < 1, "Container have {} restarts".format(restart_count))
-
-    # cleanup
-    duthost.shell(shell_clear_events_file, module_ignore_errors=True)
 
 def test_database_smoke(setup):
     duthost = setup['duthost']
@@ -245,11 +225,12 @@ def test_database_smoke(setup):
 
     check_container_restarts_helper(duthost, container)
 
-    shell_chech_config_db = "redis-cli -n 4 KEYS \"*\""
-    res_chech_config_db = duthost.shell(shell_chech_config_db, module_ignore_errors=True)
-    pytest_assert(res_chech_config_db['failed'] == False, "Error while reading redis DB.")
+    # "-n 4" means read from 4th redis namespace (CONFIG_DB)
+    shell_check_config_db = "redis-cli -n 4 KEYS \"*\""
+    res_check_config_db = duthost.shell(shell_check_config_db, module_ignore_errors=True)
+    pytest_assert(res_check_config_db['failed'] == False, "Error while reading redis DB.")
 
-    logger.info("config DB have {} records.".format(len(res_chech_config_db['stdout_lines'])))
+    logger.info("config DB have {} records.".format(len(res_check_config_db['stdout_lines'])))
 
 def test_syncd_smoke(setup):
     duthost = setup['duthost']
@@ -281,20 +262,6 @@ def test_pmon_smoke(setup):
     check_container_sanity_helper(config, container)
 
     check_container_restarts_helper(duthost, container)
-
-def check_container_sanity_helper(config, container):
-    if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
-            sonic_ctrs[container]['status'] == False:
-        pytest.skip("SKIP. database container is disabled on build.")
-    if config and config[sonic_ctrs[container]['build_flag']] == "n":
-        pytest_assert(sonic_ctrs[container]['status'] == False, \
-            "There is running {} container, but shouldn't be.".format(container))
-    if config and config[sonic_ctrs[container]['build_flag']] == "y":
-        pytest_assert(sonic_ctrs[container]['status'] == True, \
-            "There is no running {} container, but should be.".format(container))
-
-    pytest_assert(sonic_ctrs['database']['status'], "{} container is not running.".format(container))
-
 
 def get_uptime(duthost, hours = False, minutes = False, seconds = False, smooth = 0):
     '''
@@ -330,3 +297,37 @@ def is_process_running(duthost, process):
         return True
     else:
         return False
+
+def check_container_sanity_helper(config, container):
+    if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
+            sonic_ctrs[container]['status'] == False:
+        pytest.skip("SKIP. {} container is disabled on build.".format(container))
+    if config and config[sonic_ctrs[container]['build_flag']] == "n":
+        pytest_assert(sonic_ctrs[container]['status'] == False, \
+            "There is running {} container, but shouldn't be.".format(container))
+    if config and config[sonic_ctrs[container]['build_flag']] == "y":
+        pytest_assert(sonic_ctrs[container]['status'] == True, \
+            "There is no running {} container, but should be.".format(container))
+
+    pytest_assert(sonic_ctrs['database']['status'], "{} container is not running.".format(container))
+
+def check_container_restarts_helper(duthost, container):
+    events_file = container + "_events"
+    uptime = get_uptime(duthost, hours=True, smooth=1)['stdout']
+
+    shell_get_events = "docker events --since {}h --filter container={} --filter event=restart > {} &"\
+        .format(uptime, container, events_file)
+    shell_read_events_file = "[ -e {} ] && cat {}".format(events_file, events_file)
+    shell_clear_events_file = "[ -e {} ] && rm -f {}".format(events_file, events_file)
+
+    res_get_events = duthost.shell(shell_get_events, module_ignore_errors=True)
+    pytest_assert(res_get_events['failed'] == False, "Error while calling docker events.")
+
+    res_read_events_file = duthost.shell(shell_read_events_file, module_ignore_errors=True)
+    pytest_assert(res_read_events_file['failed'] == False, "Error while reading event file.")
+
+    restart_count = len(res_read_events_file['stdout_lines'])
+    pytest_assert(restart_count < 1, "Container have {} restarts".format(restart_count))
+
+    # cleanup
+    duthost.shell(shell_clear_events_file, module_ignore_errors=True)
