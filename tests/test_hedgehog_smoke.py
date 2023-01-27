@@ -251,6 +251,16 @@ def test_database_smoke(setup):
 
     logger.info("config DB have {} records.".format(len(res_chech_config_db['stdout_lines'])))
 
+def test_syncd_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "syncd"
+
+    check_container_sanity_helper(config, container)
+
+    check_container_restarts_helper(duthost, container)
+
+    pytest_assert(is_process_running(duthost, "syncd"), "There is no running syncd process.")
 
 def check_container_sanity_helper(config, container):
     if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
