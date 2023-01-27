@@ -215,6 +215,63 @@ def test_vrrp_smoke(setup):
                                                                                                 version=version,
                                                                                                 priority=priority))
 
+def check_container_restarts_helper(duthost, container):
+    events_file = container + "_events"
+    uptime = get_uptime(duthost, hours=True, smooth=1)['stdout']
+
+    shell_get_events = "docker events --since {}h --filter container={} --filter event=restart > {} &"\
+        .format(uptime, container, events_file)
+    shell_read_events_file = "[ -e {} ] && cat {}".format(events_file, events_file)
+    shell_clear_events_file = "[ -e {} ] && rm -f {}".format(events_file, events_file)
+
+    res_get_events = duthost.shell(shell_get_events, module_ignore_errors=True)
+    pytest_assert(res_get_events['failed'] == False, "Error while calling docker events.")
+
+    res_read_events_file = duthost.shell(shell_read_events_file, module_ignore_errors=True)
+    pytest_assert(res_read_events_file['failed'] == False, "Error while reading event file.")
+
+    restart_count = len(res_read_events_file['stdout_lines'])
+    pytest_assert(restart_count < 1, "Container have {} restarts".format(restart_count))
+
+    # cleanup
+    duthost.shell(shell_clear_events_file, module_ignore_errors=True)
+
+def test_database_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "database"
+
+    if config[sonic_ctrs['database']['build_flag']] == "n":
+        pytest.skip("SKIP, database container is disabled on build")
+
+    pytest_assert(sonic_ctrs['database']['status'], "database container is not running.")
+
+    check_container_restarts_helper(duthost, container)
+
+    shell_chech_config_db = "redis-cli -n 4 KEYS \"*\""
+    res_chech_config_db = duthost.shell(shell_chech_config_db, module_ignore_errors=True)
+    pytest_assert(res_chech_config_db['failed'] == False, "Error while reading redis DB.")
+
+    logger.info("config DB have {} records.".format(len(res_chech_config_db['stdout_lines'])))
+
+
+def get_uptime(duthost, hours = False, minutes = False, seconds = False, smooth = 0):
+    '''
+    hours/minutes/seconds - set to True which format you need. Default format is seconds.
+    smooth - add to result (e.g. uptime is 1h, smooth == 3 -> res == 4)
+    '''
+
+    divider = 1
+    if hours:
+        divider = 3600
+    elif minutes:
+        divider = 60
+
+    shell_uptime = "cat /proc/uptime | awk '{{print int($1/{} + {})}}'".format(divider, smooth)
+    result = duthost.shell(shell_uptime)
+
+    return result
+
 
 def is_container_running(duthost, name):
     # can't use community method from sonic.py, error:
