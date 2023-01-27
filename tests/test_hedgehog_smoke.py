@@ -241,6 +241,18 @@ def test_database_smoke(setup):
     config = setup['config']
     container = "database"
 
+    check_container_sanity_helper(config, container)
+
+    check_container_restarts_helper(duthost, container)
+
+    shell_chech_config_db = "redis-cli -n 4 KEYS \"*\""
+    res_chech_config_db = duthost.shell(shell_chech_config_db, module_ignore_errors=True)
+    pytest_assert(res_chech_config_db['failed'] == False, "Error while reading redis DB.")
+
+    logger.info("config DB have {} records.".format(len(res_chech_config_db['stdout_lines'])))
+
+
+def check_container_sanity_helper(config, container):
     if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
             sonic_ctrs[container]['status'] == False:
         pytest.skip("SKIP. database container is disabled on build.")
@@ -251,15 +263,7 @@ def test_database_smoke(setup):
         pytest_assert(sonic_ctrs[container]['status'] == True, \
             "There is no running {} container, but should be.".format(container))
 
-    pytest_assert(sonic_ctrs['database']['status'], "database container is not running.")
-
-    check_container_restarts_helper(duthost, container)
-
-    shell_chech_config_db = "redis-cli -n 4 KEYS \"*\""
-    res_chech_config_db = duthost.shell(shell_chech_config_db, module_ignore_errors=True)
-    pytest_assert(res_chech_config_db['failed'] == False, "Error while reading redis DB.")
-
-    logger.info("config DB have {} records.".format(len(res_chech_config_db['stdout_lines'])))
+    pytest_assert(sonic_ctrs['database']['status'], "{} container is not running.".format(container))
 
 
 def get_uptime(duthost, hours = False, minutes = False, seconds = False, smooth = 0):
