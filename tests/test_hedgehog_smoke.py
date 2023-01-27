@@ -168,13 +168,11 @@ def test_vrrp_smoke(setup):
     is_vrrpd_proc = is_process_running(duthost, "vrrpd")
 
     # check container and process
-    if sonic_ctrs['bgp']['status'] and not config:
+    if not config:
         pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, 'vrrpd' is not running by default.")
-    elif not sonic_ctrs['bgp']['status']:
+    elif config and config['INCLUDE_FRR_VRRP'] == 'n':
         pytest_assert(not is_vrrpd_proc, "There is running 'vrrpd' process, but shouldn't be.")
-    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_VRRP'] == 'n':
-        pytest_assert(not is_vrrpd_proc, "There is running 'vrrpd' process, but shouldn't be.")
-    elif sonic_ctrs['bgp']['status'] and config and config['INCLUDE_FRR_VRRP'] == 'y':
+    elif config and config['INCLUDE_FRR_VRRP'] == 'y':
         interface = "lo"
         vrid = 111
         version = 2
