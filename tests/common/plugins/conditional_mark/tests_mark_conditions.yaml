@@ -930,12 +930,12 @@ vxlan/test_vxlan_ecmp.py:
 #######################################
 test_hedgehog_smoke.py::test_vrrp_smoke:
   xfail:
-    reason: "Hedgehog: VRRP is not enabled yet. DEV-?"
+    reason: "Hedgehog: VRRP is not enabled yet. DEV-513"
     conditions:
       - "asic_type in ['vs']"
 
 test_hedgehog_smoke.py::test_bfd_smoke:
   xfail:
-    reason: "Hedgehog: BFD is not enabled yet. DEV-?"
+    reason: "Hedgehog: BFD is not enabled yet. DEV-513"
     conditions:
       - "asic_type in ['vs']"
