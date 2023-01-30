@@ -231,7 +231,7 @@ def test_syslog_smoke(setup):
         fake_syslog_server_ip = "1.1.1.1"
         try:
             # verify rsyslogd process
-            pytest_assert(is_rsyslogd_proc, "There is no running vrrpd process, but should be.")
+            pytest_assert(is_rsyslogd_proc, "There is no running 'rsyslogd' process, but should be.")
             # add fake syslog ip server verify it is added
             duthost.shell("sudo config syslog add {}".format(fake_syslog_server_ip), module_ignore_errors=True)
             syslog_servers = duthost.shell("show runningconfiguration syslog", module_ignore_errors=True)
