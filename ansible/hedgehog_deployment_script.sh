@@ -5,7 +5,7 @@
 
 MGMT_CONTAINER=`docker ps | awk '/docker-sonic-mgmt/ { print $NF }'`
 CURRENT_TOPO_CONTAINER=`docker ps | awk '/sonicdev-microsoft.azurecr.io/ { print $NF }'`
-SONIC_MGMT_REPO="sonic-mgmt_dev_202205"
+SONIC_MGMT_REPO="sonic-mgmt"
 
 pre_check () {
   echo "Pre check"
@@ -36,7 +36,7 @@ deploy_topo () {
 
 post_check () {
   echo "Verify env"
-  docker exec -i "$MGMT_CONTAINER" bash -c "cd /data/$SONIC_MGMT_REPO/tests && export ANSIBLE_CONFIG=../ansible; export ANSIBLE_LIBRARY=../ansible; pytest --inventory ../ansible/veos_vtb --host-pattern vlab-01 --testbed vms-kvm-t0 --testbed_file vtestbed.yaml --log-cli-level warning --log-file-level debug --showlocals --assert plain --show-capture no -rav --allow_recover --topology vs,any --module-path ../ansible/library --skip_sanity ./bgp/test_bgp_fact.py"
+  docker exec -i "$MGMT_CONTAINER" bash -c "cd /data/$SONIC_MGMT_REPO/tests && export ANSIBLE_CONFIG=../ansible; export ANSIBLE_LIBRARY=../ansible; pytest --inventory ../ansible/veos_vtb --host-pattern vlab-01 --testbed vms-kvm-t0 --testbed_file vtestbed.yaml --log-cli-level warning --log-file-level debug --showlocals --assert plain --show-capture no -rav --allow_recover --topology vs,any --module-path ../ansible/library --skip_sanity ./test_hedgehog_smoke.py"
 
   if [ $? -eq 0 ]; then
     echo "Topo is deployed successfully."
@@ -48,4 +48,5 @@ post_check () {
 pre_check
 remove_topo
 deploy_topo
+sleep 120
 post_check
