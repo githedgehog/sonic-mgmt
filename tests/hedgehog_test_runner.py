@@ -40,7 +40,7 @@ def generate_test_list():
 
 def build_cmd_to_run():
     global CMD_TO_RUN
-    CMD_TO_RUN = f"export ANSIBLE_CONFIG=../ansible; export ANSIBLE_LIBRARY=../ansible; pytest --inventory ../ansible/veos_vtb --host-pattern vlab-01 --testbed {TOPO} --testbed_file vtestbed.yaml --log-cli-level warning --log-file-level debug --showlocals --assert plain --show-capture no -rav --allow_recover --topology vs,any --module-path ../ansible/library --skip_sanity"
+    CMD_TO_RUN = f"export ANSIBLE_CONFIG=../ansible; export ANSIBLE_LIBRARY=../ansible; pytest --inventory ../ansible/veos_vtb --host-pattern vlab-01 --testbed {TOPO} --testbed_file vtestbed.yaml --log-cli-level warning --log-file-level debug --showlocals --assert plain --show-capture no -rav --allow_recover --topology t0,any --module-path ../ansible/library --skip_sanity"
     test_list = " ".join(TESTS_TO_RUN)
     CMD_TO_RUN += f" {test_list}"
     CMD_TO_RUN += f" --alluredir {REPORT_DIR}"
