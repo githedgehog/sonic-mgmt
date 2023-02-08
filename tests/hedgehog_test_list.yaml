@@ -57,3 +57,4 @@
     - "test_upgrade_path.py"
   "root_dir":
     - "test_interfaces.py"
+    - "test_hedgehog_smoke.py"

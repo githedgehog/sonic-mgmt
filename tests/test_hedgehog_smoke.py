@@ -61,6 +61,11 @@ def setup(duthosts, rand_one_dut_hostname):
 
 @pytest.mark.parametrize("name", sonic_ctrs.keys())
 def test_container_state(setup, name):
+    """Verify container state according to build_metadata.yaml file on a DUT
+        e.i: INCLUDE_SNMP: n -> container is not running
+        INCLUDE_SNMP: y -> container is running.
+        In case, no build_metadata.yaml, then all containers are running"""
+
     config = setup['config']
     if config is False:
         pytest.skip("SKIP: no build_metadata.yaml file. Cannot check expected state.")
@@ -72,6 +77,9 @@ def test_container_state(setup, name):
 
 
 def test_bgp_smoke(setup):
+    """Verify that 'bgdp' process is running according to INCLUDE_FRR_BGP (build_metadata.yaml).
+        If so, make basic BGP configuration and verify that configuration is applied"""
+
     # setup, get init bgp conf
     duthost = setup['duthost']
     config = setup['config']
@@ -123,6 +131,9 @@ def test_bgp_smoke(setup):
 
 
 def test_bfd_smoke(setup):
+    """Verify that 'bfdd' process is running according to INCLUDE_FRR_BFD (build_metadata.yaml).
+        If so, make basic BFD configuration and verify that configuration is applied"""
+
     duthost = setup['duthost']
     config = setup['config']
     is_bfdd_proc = is_process_running(duthost, "bfdd")
@@ -169,6 +180,9 @@ def test_bfd_smoke(setup):
 
 
 def test_vrrp_smoke(setup):
+    """Verify that 'vrrpd' process is running according to INCLUDE_FRR_VRRP (build_metadata.yaml).
+        If so, make basic VRRP configuration and verify that configuration is applied"""
+
     duthost = setup['duthost']
     config = setup['config']
     is_vrrpd_proc = is_process_running(duthost, "vrrpd")
@@ -217,6 +231,9 @@ def test_vrrp_smoke(setup):
 
 
 def test_syslog_smoke(setup):
+    """Verify that 'rsyslogd' process is running according to INCLUDE_SYSLOG (build_metadata.yaml).
+        If so, make basic syslog configuration and verify that configuration is applied"""
+
     # setup, get init bgp conf
     duthost = setup['duthost']
     config = setup['config']
@@ -244,6 +261,10 @@ def test_syslog_smoke(setup):
 
 
 def test_database_smoke(setup):
+    """Verify that 'database' container state according to INCLUDE_DATABASE (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart).
+        Check that config_db exist in redis."""
+
     duthost = setup['duthost']
     config = setup['config']
     container = "database"
@@ -261,6 +282,10 @@ def test_database_smoke(setup):
 
 
 def test_syncd_smoke(setup):
+    """Verify that 'syncd' container state according to INCLUDE_SYNCD (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart).
+        Verify that 'syncd' process is running."""
+
     duthost = setup['duthost']
     config = setup['config']
     container = "syncd"
@@ -273,6 +298,10 @@ def test_syncd_smoke(setup):
 
 
 def test_swss_smoke(setup):
+    """Verify that 'swss' container state according to INCLUDE_SWSS (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart).
+        Verify that 'orchagent' process is running."""
+
     duthost = setup['duthost']
     config = setup['config']
     container = "swss"
@@ -285,6 +314,9 @@ def test_swss_smoke(setup):
 
 
 def test_pmon_smoke(setup):
+    """Verify that 'pmon' container state according to INCLUDE_PMON (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart)."""
+
     duthost = setup['duthost']
     config = setup['config']
     container = "pmon"

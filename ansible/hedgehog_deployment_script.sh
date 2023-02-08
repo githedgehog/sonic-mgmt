@@ -36,7 +36,7 @@ deploy_topo () {
 
 post_check () {
   echo "Verify env"
-  docker exec -i "$MGMT_CONTAINER" bash -c "cd /data/$SONIC_MGMT_REPO/tests && export ANSIBLE_CONFIG=../ansible; export ANSIBLE_LIBRARY=../ansible; pytest --inventory ../ansible/veos_vtb --host-pattern vlab-01 --testbed vms-kvm-t0 --testbed_file vtestbed.yaml --log-cli-level warning --log-file-level debug --showlocals --assert plain --show-capture no -rav --allow_recover --topology vs,any --module-path ../ansible/library --skip_sanity ./test_hedgehog_smoke.py"
+  docker exec -i "$MGMT_CONTAINER" bash -c "cd /data/$SONIC_MGMT_REPO/tests && export ANSIBLE_CONFIG=../ansible; export ANSIBLE_LIBRARY=../ansible; pytest --inventory ../ansible/veos_vtb --host-pattern vlab-01 --testbed vms-kvm-t0 --testbed_file vtestbed.yaml --log-cli-level warning --log-file-level debug --showlocals --assert plain --show-capture no -rav --allow_recover --topology t0,any --module-path ../ansible/library --skip_sanity ./test_hedgehog_smoke.py"
 
   if [ $? -eq 0 ]; then
     echo "Topo is deployed successfully."
