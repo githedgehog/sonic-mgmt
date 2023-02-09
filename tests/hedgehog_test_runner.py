@@ -2,6 +2,7 @@ import getopt
 import subprocess
 import sys
 
+import paramiko
 import yaml
 
 # structure of yaml
@@ -9,28 +10,64 @@ import yaml
 #   "acl":
 #     - "test_stress_acl.py"
 # "01-t0": - not implemented yet
-PATH_TO_YAML = "hedgehog_test_list.yaml"
-CMD_TO_RUN = ""
-TESTS_TO_RUN = []
+PATH_TO_AVAILABLE_TESTS = "hedgehog_test_list.yaml"
+PATH_TO_BUILD_METADATA = "/etc/sonic/build_metadata.yaml"
+PATH_TO_CREDS = "../ansible/group_vars/lab/secrets.yml"
+DUT_IP = "10.250.0.101"  # todo: keep all conf in testbed.csv and get topo and ip from this file
+ALLOWED_TOPO = ['vms-kvm-t0']  # todo in future '01-t0', '01-t1', '01-ptf'
 
 # will be defined below
+CMD_TO_RUN = ""
+TESTS_TO_RUN = []
 TOPO = None
 REPORT_DIR = None
-DATA = None
-ALLOWED_TOPO = ['vms-kvm-t0']  # todo in future '01-t0', '01-t1', '01-ptf'
+AVAILABLE_TESTS = None
+METADATA = None
 
 
 def read_yaml(path):
     with open(path, "r") as stream:
         try:
-            global DATA
-            DATA = yaml.safe_load(stream)
+            return yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
 
 
+def read_metadata(path):
+    global METADATA
+    creds = read_yaml(PATH_TO_CREDS)
+    ssh_username = creds['sonicadmin_user']
+    ssh_password = creds['sonicadmin_password']
+
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(DUT_IP, username=ssh_username, password=ssh_password, look_for_keys=False)
+        stdin, stdout, stderr = ssh.exec_command("cat {}".format(path))
+        if stdout.channel.recv_exit_status() == 0:
+            METADATA = yaml.safe_load(stdout.read().decode('utf-8'))
+    except paramiko.AuthenticationException:
+        print("SSH connect failed. Make sure use the expected password according to the SONiC image.")
+        raise
+    finally:
+        ssh.close()
+
+
 def generate_test_list():
-    for key, value in DATA[TOPO].items():
+    # todo create enum for INCLUDE_* flags and use them here and in hedgehog_smoke_test
+    test_dictionary = dict(AVAILABLE_TESTS[TOPO].items())
+    # remove tests in case feature is disabled
+    # by default all available test are going to be run, otherwise explicitly delete
+    if METADATA:
+        metadata_config = METADATA['Configuration']
+        if metadata_config['INCLUDE_SNMP'] == 'n':
+            test_dictionary.pop('snmp', None)
+            test_dictionary.pop('cacl', None)
+        if metadata_config['INCLUDE_NTP'] == 'n':
+            test_dictionary.pop('ntp', None)
+
+    # generate list of tests to run
+    for key, value in test_dictionary.items():
         for test_name in value:
             if key == 'root_dir':
                 TESTS_TO_RUN.append(f"./{test_name}")
@@ -53,6 +90,7 @@ def run_test():
 
 
 def main(argv):
+    global AVAILABLE_TESTS
     help_msg = "./hedgehog_test_runner.py -t <topo: [{}]> -r <path to report dir>".format('|'.join(ALLOWED_TOPO))
     found_t, found_r = False, False
     try:
@@ -82,7 +120,8 @@ def main(argv):
         print("'--topo' or --'report_dir' is not passed")
         print(help_msg)
         sys.exit(2)
-    read_yaml(PATH_TO_YAML)
+    read_metadata(PATH_TO_BUILD_METADATA)
+    AVAILABLE_TESTS = read_yaml(PATH_TO_AVAILABLE_TESTS)
     generate_test_list()
     build_cmd_to_run()
     run_test()
