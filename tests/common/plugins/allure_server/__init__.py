@@ -66,11 +66,11 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
 
 def get_setup_session_info(session):
     ansible_dir = get_ansible_path(session)
-    testbed = session.config.option.testbed
+    host = session.config.option.ansible_host_pattern
 
     os.chdir(ansible_dir)
 
-    cmd = "ansible -m command -i inventory {} -a 'show version'".format(testbed)
+    cmd = "ansible -m command -i inventory {} -a 'show version'".format(host)
     output = subprocess.check_output(cmd, shell=True).decode('utf-8')
 
     version = re.compile(r"sonic software version: +([^\s]+)\s", re.IGNORECASE)
