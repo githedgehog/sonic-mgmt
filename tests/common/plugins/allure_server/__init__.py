@@ -5,6 +5,7 @@ import requests
 import base64
 import re
 import subprocess
+from collections import OrderedDict
 
 logger = logging.getLogger()
 
@@ -78,12 +79,22 @@ def get_setup_session_info(session):
     hwsku = re.compile(r"hwsku: +([^\s]+)\s", re.IGNORECASE)
     asic = re.compile(r"asic: +([^\s]+)\s", re.IGNORECASE)
 
-    result = {
-        "Version": version.findall(output)[0] if version.search(output) else "",
-        "Platform": platform.findall(output)[0] if platform.search(output) else "",
-        "HwSKU": hwsku.findall(output)[0] if hwsku.search(output) else "",
-        "ASIC": asic.findall(output)[0] if asic.search(output) else ""
-    }
+    result = OrderedDict([
+        ("ImageVersion", version.findall(output)[0] if version.search(output) else ""),
+        ("Platform", platform.findall(output)[0] if platform.search(output) else ""),
+        ("HwSKU", hwsku.findall(output)[0] if hwsku.search(output) else ""),
+        ("ASIC", asic.findall(output)[0] if asic.search(output) else "")
+    ])
+
+    path_to_metadata = "/etc/sonic/build_metadata.yaml"
+    cmd = "ansible -m command -i inventory {0} -a '/bin/bash -c \"if [ -e {1} ]; then cat {1}; else echo \'\'; fi\"'"\
+        .format(host, path_to_metadata)
+    output = subprocess.check_output(cmd, shell=True).decode('utf-8')
+    if "rc=0" in output:
+        output_list = output.split('\n')
+        metadata_dict = convert_build_metadata_to_dict(output_list)
+        for key, value in metadata_dict.iteritems():
+            result[key] = value
 
     return result
 
@@ -114,6 +125,27 @@ def get_time_stamp_str():
     current_time = time.time()
     current_time_without_dot = str(current_time).replace('.', '')
     return current_time_without_dot
+
+
+def convert_build_metadata_to_dict(lst):
+    """
+    This method return dict with build_metadata.yaml
+    Args:
+        lst: output from ansible -m ... and split('\n')
+    Returns:
+        dict
+    """
+    # list example
+    # [u'vlab-01 | CHANGED | rc=0 >>', u'Conf:', u'  INCLUDE_NTP: y', u'  KUBE_DOCKER_PROXY: http://172.16.1.1:3128/']
+    d = {}
+    for item in lst:
+        if ':' not in item:
+            continue
+        key, value = item.split(':', 1)
+        key = key.strip()
+        value = value.strip() if value.strip() else None
+        d[key] = value
+    return d
 
 
 class AllureServer:
