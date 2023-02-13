@@ -5,6 +5,7 @@ all:
         sonic_latest:
     leaf_topo_1:
       hosts:
+        vlab-01:
         switch1:
         switch5:
     ptf:
@@ -23,6 +24,14 @@ all:
 
 sonic_latest:
   hosts:
+    vlab-01:
+      ansible_host: 10.250.0.101
+      ansible_hostv6: fec0::ffff:afa:1
+      type: kvm
+      hwsku: Force10-S6000
+      serial_port: 9000
+      ansible_password: password
+      ansible_user: admin
     switch1:
       ansible_host: 10.0.0.100
       sonic_version: v2
