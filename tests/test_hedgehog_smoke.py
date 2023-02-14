@@ -268,15 +268,17 @@ def test_database_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "database"
+    service = "database.service"
+    shell_check_config_db = "redis-cli -n 4 KEYS \"*\""
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
 
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "database service {} isn't active".format(service))
+
     # "-n 4" means read from 4th redis namespace (CONFIG_DB)
-    shell_check_config_db = "redis-cli -n 4 KEYS \"*\""
-    res_check_config_db = duthost.shell(shell_check_config_db, module_ignore_errors=True)
-    pytest_assert(res_check_config_db['failed'] == False, "Error while reading redis DB.")
+    res_check_config_db = run_shell_helper(duthost, shell_check_config_db, "Error while reading redis DB.", do_assert=True)
 
     logger.info("config DB have {} records.".format(len(res_check_config_db['stdout_lines'])))
 
@@ -289,12 +291,15 @@ def test_syncd_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "syncd"
+    service = "syncd.service"
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
 
     pytest_assert(is_process_running(duthost, "syncd"), "There is no running syncd process.")
+
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "syncd service {} isn't active".format(service))
 
 
 def test_swss_smoke(setup):
@@ -305,12 +310,15 @@ def test_swss_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "swss"
+    service = "swss.service"
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
 
     pytest_assert(is_process_running(duthost, "orchagent"), "There is no running orchagent process.")
+
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "swss service {} isn't active".format(service))
 
 
 def test_pmon_smoke(setup):
@@ -320,10 +328,13 @@ def test_pmon_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "pmon"
+    service = "pmon.service"
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
+
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "pmon service {} isn't active".format(service))
 
 
 def test_nat_smoke(setup):
@@ -355,10 +366,11 @@ def test_nat_smoke(setup):
     # Change NAT state and check it
     run_shell_helper(duthost, shell_conf_nat_feature + " " + new_nat_state)
     res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "CLI \"{}\" command error".format(shell_show_nat_state), do_assert=True)
-    pytest_assert(original_nat_state != res_show_nat_state['stdout'], "Error while changing NAT feature state")
+    pytest_assert(new_nat_state == res_show_nat_state['stdout'], "Error while changing NAT feature state")
 
     # cleanup
-    run_shell_helper(duthost, shell_conf_nat_feature + " " + original_nat_state)
+    run_shell_helper(duthost, shell_conf_nat_feature + " " + original_nat_state,
+                    "Cleanup: error while NAT state ({}) to the original ({})".format(new_nat_state, original_nat_state), do_assert=True)
 
 
 def test_radius_smoke(setup):
@@ -371,16 +383,13 @@ def test_radius_smoke(setup):
     fake_server_ip = "1.1.1.1"
     shell_conf_radius = "sudo config radius"
     shell_conf_radius_add = shell_conf_radius + " add " + fake_server_ip
-    shell_conf_radius_del = shell_conf_radius + " del " + fake_server_ip
+    shell_conf_radius_del = shell_conf_radius + " delete " + fake_server_ip
 
     if config and config[build_flag] == "n":
         pytest.skip("SKIP. Radius feature is disabled on build.")
 
     # Check if deb packets installed
-    for package in deb_packets:
-        shell_check_package = "apt list --installed " + package
-        res_check_package = run_shell_helper(duthost, shell_check_package)
-        pytest_assert(len(res_check_package['stdout_lines']) > 1, "No installed {} package".format(package))
+    check_installed_package_helper(duthost, deb_packets)
 
     # Check CLI available
     run_shell_helper(duthost, shell_show_radius, "CLI \"{}\" command error".format(shell_show_radius), do_assert=True)
@@ -397,7 +406,7 @@ def test_radius_smoke(setup):
     pytest_assert(fake_server_ip in res_show_radius_server['stdout_lines'], "Radius server {} doesn't added".format(fake_server_ip))
 
     # Cleanup
-    run_shell_helper(duthost, shell_conf_radius_del)
+    run_shell_helper(duthost, shell_conf_radius_del, "Cleanup: error with deletion of fake RADIUS server ({})".format(fake_server_ip), do_assert=True)
 
 
 def test_ntp_smoke(setup):
@@ -417,10 +426,7 @@ def test_ntp_smoke(setup):
     pytest_assert(is_ntpd_proc, "There is no running 'ntpd' process, but should be.")
 
     # Check if deb packets installed
-    for package in deb_packets:
-        shell_check_package = "apt list --installed " + package
-        res_check_package = run_shell_helper(duthost, shell_check_package)
-        pytest_assert(len(res_check_package['stdout_lines']) > 1, "No installed {} package".format(package))
+    check_installed_package_helper(duthost, deb_packets)
 
     # Check if systemd service is active
     pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
@@ -432,16 +438,9 @@ def test_ntp_smoke(setup):
     run_shell_helper(duthost, shell_conf_ntp, "CLI \"{}\" command error".format(shell_conf_ntp), do_assert=True)
 
 
-# proc snmpd
-# redis namespace 4
-
-# check metadata, docker, service
-# add snmp user (sudo config snmp user add <NAME> noAuthNoPriv RO)
-# check snmp user in redis (SNMP_USER|<NAME>)
 def test_snmp_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
-    build_flag = "INCLUDE_SNMP"
     container = "snmp"
     is_snmpd_proc = is_process_running(duthost, "snmpd")
     service = "snmp.service"
@@ -451,6 +450,7 @@ def test_snmp_smoke(setup):
     shell_conf_snmp_user_add = shell_conf_snmp + " user add " + snmp_test_user + " noAuthNoPriv RO"
     shell_conf_snmp_user_del = shell_conf_snmp + " user del " + snmp_test_user
 
+    # Check metadata
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
@@ -475,7 +475,7 @@ def test_snmp_smoke(setup):
     pytest_assert(res_redis_snmp_user['stdout_lines'] > 0, "User doesn't exist in redis-db")
 
     # Cleanup
-    run_shell_helper(duthost, shell_conf_snmp_user_del)
+    run_shell_helper(duthost, shell_conf_snmp_user_del, "Cleanup: error with deletion SNMP user ({})".format(snmp_test_user), do_assert=True)
 
 
 def test_lldp_smoke(setup):
@@ -486,6 +486,7 @@ def test_lldp_smoke(setup):
     service = "lldp.service"
     shell_show_lldp = ["show lldp neighbors", "show lldp table"]
 
+    # check metadata
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
@@ -505,6 +506,7 @@ def test_mgmt_framework_smoke(setup):
     container = "mgmt-framework"
     service = "mgmt-framework.service"
 
+    # Check metadata
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
