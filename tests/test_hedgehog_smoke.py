@@ -478,6 +478,79 @@ def test_snmp_smoke(setup):
     run_shell_helper(duthost, shell_conf_snmp_user_del)
 
 
+def test_lldp_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "lldp"
+    is_lldpd_proc = is_process_running(duthost, "lldpd")
+    service = "lldp.service"
+    shell_show_lldp = ["show lldp neighbors", "show lldp table"]
+
+    check_container_sanity_helper(config, container)
+    check_container_restarts_helper(duthost, container)
+
+    pytest_assert(is_lldpd_proc, "There is no running 'lldpd' process, but should be.")
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+    # Check CLI available
+    for shell_show in shell_show_lldp:
+        run_shell_helper(duthost, shell_show, "CLI \"{}\" command error".format(shell_show), do_assert=True)
+
+
+def test_mgmt_framework_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "mgmt-framework"
+    service = "mgmt-framework.service"
+
+    check_container_sanity_helper(config, container)
+    check_container_restarts_helper(duthost, container)
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+    # Error: FATAL: root cannot launch CLI
+    # TODO: resolve root error
+    # test "sonic-cli"
+    # run_shell_helper(duthost, "sonic-cli", "sonic-cli returned error", do_assert=True)
+
+
+def test_restapi_smoke(setup):
+    duthost = setup['duthost']
+    config = setup['config']
+    build_flag = "INCLUDE_RESTAPI"
+    container = "restapi"
+    service = "restapi.service"
+    status = is_container_running(duthost, "restapi")
+
+    # Check metadata with container
+    if config and config[build_flag] == "n" and status == False:
+        pytest.skip("SKIP. {} container is disabled on build.".format(container))
+    if config and config[build_flag] == "n":
+        pytest_assert(status == False, "There is running {} container, but shouldn't be.".format(container))
+    if config and config[build_flag] == "y":
+        pytest_assert(status == True, "There is no running {} container, but should be.".format(container))
+
+    pytest_assert(status, "{} container is not running.".format(container))
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+
+def check_installed_package_helper(duthost, package_list=None):
+    shell_check_package = "apt list --installed "
+
+    if not package_list:
+        logger.warning("Package list is none or empty")
+        return
+
+    for package in package_list:
+        res_check_package = run_shell_helper(duthost, shell_check_package + package)
+        pytest_assert(len(res_check_package['stdout_lines']) > 1, "No installed {} package".format(package))
+
+
 def check_service_alive(duthost, service):
     alive = False
     shell_check_service = "sudo systemctl is-active " + service
