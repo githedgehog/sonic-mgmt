@@ -268,15 +268,17 @@ def test_database_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "database"
+    service = "database.service"
+    shell_check_config_db = "redis-cli -n 4 KEYS \"*\""
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
 
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "database service {} isn't active".format(service))
+
     # "-n 4" means read from 4th redis namespace (CONFIG_DB)
-    shell_check_config_db = "redis-cli -n 4 KEYS \"*\""
-    res_check_config_db = duthost.shell(shell_check_config_db, module_ignore_errors=True)
-    pytest_assert(res_check_config_db['failed'] == False, "Error while reading redis DB.")
+    res_check_config_db = run_shell_helper(duthost, shell_check_config_db, "Error while reading redis DB.", do_assert=True)
 
     logger.info("config DB have {} records.".format(len(res_check_config_db['stdout_lines'])))
 
@@ -289,12 +291,15 @@ def test_syncd_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "syncd"
+    service = "syncd.service"
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
 
     pytest_assert(is_process_running(duthost, "syncd"), "There is no running syncd process.")
+
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "syncd service {} isn't active".format(service))
 
 
 def test_swss_smoke(setup):
@@ -305,12 +310,15 @@ def test_swss_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "swss"
+    service = "swss.service"
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
 
     pytest_assert(is_process_running(duthost, "orchagent"), "There is no running orchagent process.")
+
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "swss service {} isn't active".format(service))
 
 
 def test_pmon_smoke(setup):
@@ -320,10 +328,272 @@ def test_pmon_smoke(setup):
     duthost = setup['duthost']
     config = setup['config']
     container = "pmon"
+    service = "pmon.service"
 
     check_container_sanity_helper(config, container)
-
     check_container_restarts_helper(duthost, container)
+
+    # Check if nat service is active
+    pytest_assert(check_service_alive(duthost, service), "pmon service {} isn't active".format(service))
+
+
+def test_nat_smoke(setup):
+    """Verify that 'nat' feature is running according to INCLUDE_NAT (build_metadata.yaml).
+        If so, make basic NAT configuration and verify that configuration is applied"""
+    duthost = setup['duthost']
+    config = setup['config']
+    build_flag = "INCLUDE_NAT"
+    service = "nat.service"
+    shell_show_nat = "show nat"
+    shell_show_nat_state = shell_show_nat + " config globalvalues | grep \"Admin Mode\" | awk '{print $4}'"
+    shell_conf_nat = "sudo config nat"
+    shell_conf_nat_feature = shell_conf_nat + " feature"
+
+
+    if config and config[build_flag] == "n":
+        pytest.skip("SKIP. NAT feature is disabled on build.")
+
+    # Skip this step. Currently nat.setvice doesn't work
+    # Check if nat service is active
+    # pytest_assert(check_service_alive(duthost, service), "NAT service {} isn't active".format(service))
+
+    # Check CLI available
+    run_shell_helper(duthost, shell_show_nat, "CLI \"{}\" command error".format(shell_show_nat), do_assert=True)
+    run_shell_helper(duthost, shell_conf_nat, "CLI \"{}\" command error".format(shell_conf_nat), do_assert=True)
+
+    # Get NAT state
+    res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "Fail while getting NAT state", do_assert=True)
+    original_nat_state = res_show_nat_state['stdout']
+    new_nat_state = "enable" if original_nat_state == "disabled" else "disable"
+
+    try:
+        # Change NAT state and check it
+        run_shell_helper(duthost, shell_conf_nat_feature + " " + new_nat_state)
+        res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "CLI \"{}\" command error".format(shell_show_nat_state), do_assert=True)
+        pytest_assert(new_nat_state + "d" == res_show_nat_state['stdout'], "Error while changing NAT feature state")
+    finally:
+        # cleanup
+        run_shell_helper(duthost, shell_conf_nat_feature + " " + original_nat_state.rstrip(original_nat_state[-1]),
+                        "Cleanup: error while NAT state ({}) to the original ({})".format(new_nat_state, original_nat_state), do_assert=True)
+
+
+def test_radius_smoke(setup):
+    """Verify that 'radius' feature is running according to INCLUDE_RADIUS (build_metadata.yaml).
+        If so, make basic RADIUS configuration and verify that configuration is applied"""
+    duthost = setup['duthost']
+    config = setup['config']
+    build_flag = "INCLUDE_RADIUS"
+    deb_packets = ["libnss-radius", "libpam-radius-auth"]
+    shell_show_radius = "show radius"
+    shell_show_radius_server = shell_show_radius + " | grep \"RADIUS_SERVER\" | awk '{print $3}'"
+    fake_server_ip = "1.1.1.1"
+    shell_conf_radius = "sudo config radius"
+    shell_conf_radius_add = shell_conf_radius + " add " + fake_server_ip
+    shell_conf_radius_del = shell_conf_radius + " delete " + fake_server_ip
+
+    if config and config[build_flag] == "n":
+        pytest.skip("SKIP. Radius feature is disabled on build.")
+
+    # Check if deb packets installed
+    check_installed_package_helper(duthost, deb_packets)
+
+    # Check CLI available
+    run_shell_helper(duthost, shell_show_radius, "CLI \"{}\" command error".format(shell_show_radius), do_assert=True)
+    run_shell_helper(duthost, shell_conf_radius, "CLI \"{}\" command error".format(shell_conf_radius), do_assert=True)
+
+    # Check there is no radius server with fake IP
+    res_show_radius_server = run_shell_helper(duthost, shell_show_radius_server)
+    for line in res_show_radius_server['stdout_lines']:
+        pytest_assert(line != fake_server_ip, "Radius server with IP {} already exists")
+
+    try:
+        # Add fake Radius server
+        run_shell_helper(duthost, shell_conf_radius_add)
+        res_show_radius_server = run_shell_helper(duthost, shell_show_radius_server)
+        pytest_assert(fake_server_ip in res_show_radius_server['stdout_lines'], "Radius server {} doesn't added".format(fake_server_ip))
+    finally:
+        # Cleanup
+        run_shell_helper(duthost, shell_conf_radius_del, "Cleanup: error with deletion of fake RADIUS server ({})".format(fake_server_ip), do_assert=True)
+
+
+def test_ntp_smoke(setup):
+    """Verify that 'ntp' feature is running according to INCLUDE_NTP (build_metadata.yaml).
+        If so, make basic NTP feature checks and verify"""
+    duthost = setup['duthost']
+    config = setup['config']
+    build_flag = "INCLUDE_NTP"
+    is_ntpd_proc = is_process_running(duthost, "ntpd")
+    deb_packets = ["ntp", "ntpstat"]
+    service = "ntp.service"
+    shell_show_ntp = "show ntp"
+    shell_conf_ntp = "sudo config ntp"
+
+    if config and config[build_flag] == "n":
+        pytest_assert(not is_ntpd_proc, "There is running 'ntpd' process, but shouldn't be.")
+        pytest.skip("SKIP. NTP is disabled on build.")
+
+    pytest_assert(is_ntpd_proc, "There is no running 'ntpd' process, but should be.")
+
+    # Check if deb packets installed
+    check_installed_package_helper(duthost, deb_packets)
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+    # Check CLI available
+    res_show_ntp = run_shell_helper(duthost, shell_show_ntp)
+    # This is workaround for 'show ntp' because ntpstat inside may return 1 (cli error == 2)
+    pytest_assert(res_show_ntp['rc'] < 2, "CLI \"{}\" command error".format(shell_show_ntp))
+    run_shell_helper(duthost, shell_conf_ntp, "CLI \"{}\" command error".format(shell_conf_ntp), do_assert=True)
+
+
+def test_snmp_smoke(setup):
+    """Verify that 'snmp' container is running according to INCLUDE_SNMP (build_metadata.yaml).
+        If so, make basic SNMP configuration and verify that configuration is applied"""
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "snmp"
+    is_snmpd_proc = is_process_running(duthost, "snmpd")
+    service = "snmp.service"
+    shell_show_snmp = ["show snmpagentaddress", "show snmptrap"]
+    shell_conf_snmp = "sudo config snmp"
+    snmp_test_user = "SNMPSmokeTestUser"
+    shell_conf_snmp_user_add = shell_conf_snmp + " user add " + snmp_test_user + " noAuthNoPriv RO"
+    shell_conf_snmp_user_del = shell_conf_snmp + " user del " + snmp_test_user
+
+    # Check metadata
+    check_container_sanity_helper(config, container)
+    check_container_restarts_helper(duthost, container)
+
+    pytest_assert(is_snmpd_proc, "There is no running 'snmpd' process, but should be.")
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+    # Check CLI available
+    for shell_show in shell_show_snmp:
+        run_shell_helper(duthost, shell_show, "CLI \"{}\" command error".format(shell_show), do_assert=True)
+    run_shell_helper(duthost, shell_conf_snmp, "CLI \"{}\" command error".format(shell_conf_snmp), do_assert=True)
+
+    try:
+        # Add SNMP user
+        run_shell_helper(duthost, shell_conf_snmp_user_add, "CLI \"{}\" command error".format(shell_conf_snmp_user_add), do_assert=True)
+
+        # Check systemd service again bcs is restards after user add
+        pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+        # Check user added to the DB
+        res_redis_snmp_user = run_shell_helper(duthost, "redis-cli -n 4 KEYS \"SNMP_USER|{}\"".format(snmp_test_user))
+        pytest_assert(res_redis_snmp_user['stdout_lines'] > 0, "User doesn't exist in redis-db")
+    finally:
+        # Cleanup
+        run_shell_helper(duthost, shell_conf_snmp_user_del, "Cleanup: error with deletion SNMP user ({})".format(snmp_test_user), do_assert=True)
+
+
+def test_lldp_smoke(setup):
+    """Verify that 'LLDP' container is running according to INCLUDE_LLDP (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart).
+        Verify that 'lldpd' process is running."""
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "lldp"
+    is_lldpd_proc = is_process_running(duthost, "lldpd")
+    service = "lldp.service"
+    shell_show_lldp = ["show lldp neighbors", "show lldp table"]
+
+    # check metadata
+    check_container_sanity_helper(config, container)
+    check_container_restarts_helper(duthost, container)
+
+    pytest_assert(is_lldpd_proc, "There is no running 'lldpd' process, but should be.")
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+    # Check CLI available
+    for shell_show in shell_show_lldp:
+        run_shell_helper(duthost, shell_show, "CLI \"{}\" command error".format(shell_show), do_assert=True)
+
+
+def test_mgmt_framework_smoke(setup):
+    """Verify that 'mgmt framework' container is running according to INCLUDE_MGMT_FRAMEWORK (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart)."""
+    duthost = setup['duthost']
+    config = setup['config']
+    container = "mgmt-framework"
+    service = "mgmt-framework.service"
+
+    # Check metadata
+    check_container_sanity_helper(config, container)
+    check_container_restarts_helper(duthost, container)
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+    # Error: FATAL: root cannot launch CLI
+    # TODO: resolve root error
+    # test "sonic-cli"
+    # run_shell_helper(duthost, "sonic-cli", "sonic-cli returned error", do_assert=True)
+
+
+def test_restapi_smoke(setup):
+    """Verify that 'RESTAPI' container is running according to INCLUDE_RESTAPI (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart)."""
+    duthost = setup['duthost']
+    config = setup['config']
+    build_flag = "INCLUDE_RESTAPI"
+    container = "restapi"
+    service = "restapi.service"
+    status = is_container_running(duthost, "restapi")
+
+    # Check metadata with container
+    if config and config[build_flag] == "n" and status == False:
+        pytest.skip("SKIP. {} container is disabled on build.".format(container))
+    if config and config[build_flag] == "n":
+        pytest_assert(status == False, "There is running {} container, but shouldn't be.".format(container))
+    if config and config[build_flag] == "y":
+        pytest_assert(status == True, "There is no running {} container, but should be.".format(container))
+
+    pytest_assert(status, "{} container is not running.".format(container))
+
+    # Check if systemd service is active
+    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+
+def check_installed_package_helper(duthost, package_list=None):
+    shell_check_package = "apt list --installed "
+
+    if not package_list:
+        logger.warning("Package list is none or empty")
+        return
+
+    for package in package_list:
+        res_check_package = run_shell_helper(duthost, shell_check_package + package)
+        pytest_assert(len(res_check_package['stdout_lines']) > 1, "No installed {} package".format(package))
+
+
+def check_service_alive(duthost, service):
+    alive = False
+    shell_check_service = "sudo systemctl is-active " + service
+
+    res_check_service = run_shell_helper(duthost, shell_check_service)
+    if res_check_service['stdout'] == "active":
+        alive = True
+
+    return alive
+
+
+def run_shell_helper(duthost, shell_command, fail_msg = "", do_assert = False):
+    res_shell_command = duthost.shell(shell_command, module_ignore_errors=True)
+    success = res_shell_command['failed']
+
+    if success == False:
+        logger.debug("Shell command {} failed:\n{}".format(shell_command, res_shell_command['stderr']))
+
+    if do_assert:
+        pytest_assert(success == False, fail_msg)
+
+    return res_shell_command
 
 
 def get_uptime(duthost, hours = False, minutes = False, seconds = False, smooth = 0):
@@ -363,17 +633,17 @@ def is_process_running(duthost, process):
 
 
 def check_container_sanity_helper(config, container):
-    if config and config[sonic_ctrs[container]['build_flag']] == "n" and \
-            sonic_ctrs[container]['status'] == False:
-        pytest.skip("SKIP. {} container is disabled on build.".format(container))
-    if config and config[sonic_ctrs[container]['build_flag']] == "n":
-        pytest_assert(sonic_ctrs[container]['status'] == False, \
-            "There is running {} container, but shouldn't be.".format(container))
-    if config and config[sonic_ctrs[container]['build_flag']] == "y":
-        pytest_assert(sonic_ctrs[container]['status'] == True, \
-            "There is no running {} container, but should be.".format(container))
+    build_flag = sonic_ctrs[container]['build_flag']
+    status = sonic_ctrs[container]['status']
 
-    pytest_assert(sonic_ctrs['database']['status'], "{} container is not running.".format(container))
+    if config and config[build_flag] == "n" and status == False:
+        pytest.skip("SKIP. {} container is disabled on build.".format(container))
+    if config and config[build_flag] == "n":
+        pytest_assert(status == False, "There is running {} container, but shouldn't be.".format(container))
+    if config and config[build_flag] == "y":
+        pytest_assert(status == True, "There is no running {} container, but should be.".format(container))
+
+    pytest_assert(status, "{} container is not running.".format(container))
 
 
 def check_container_restarts_helper(duthost, container):
@@ -385,14 +655,13 @@ def check_container_restarts_helper(duthost, container):
     shell_read_events_file = "[ -e {} ] && cat {}".format(events_file, events_file)
     shell_clear_events_file = "[ -e {} ] && rm -f {}".format(events_file, events_file)
 
-    res_get_events = duthost.shell(shell_get_events, module_ignore_errors=True)
-    pytest_assert(res_get_events['failed'] == False, "Error while calling docker events.")
+    try:
+        run_shell_helper(duthost, shell_get_events, "Error while calling docker events.", do_assert=True)
 
-    res_read_events_file = duthost.shell(shell_read_events_file, module_ignore_errors=True)
-    pytest_assert(res_read_events_file['failed'] == False, "Error while reading event file.")
+        res_read_events_file = run_shell_helper(duthost, shell_read_events_file, "Error while reading event file.", do_assert=True)
 
-    restart_count = len(res_read_events_file['stdout_lines'])
-    pytest_assert(restart_count < 1, "Container have {} restarts".format(restart_count))
-
-    # cleanup
-    duthost.shell(shell_clear_events_file, module_ignore_errors=True)
+        restart_count = len(res_read_events_file['stdout_lines'])
+        pytest_assert(restart_count < 1, "Container have {} restarts".format(restart_count))
+    finally:
+        # cleanup
+        duthost.shell(shell_clear_events_file, module_ignore_errors=True)
