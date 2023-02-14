@@ -448,7 +448,7 @@ def test_ntp_smoke(setup):
 
 
 def test_snmp_smoke(setup):
-    """Verify that 'cnmp' container is running according to INCLUDE_SNMP (build_metadata.yaml).
+    """Verify that 'snmp' container is running according to INCLUDE_SNMP (build_metadata.yaml).
         If so, make basic SNMP configuration and verify that configuration is applied"""
     duthost = setup['duthost']
     config = setup['config']
