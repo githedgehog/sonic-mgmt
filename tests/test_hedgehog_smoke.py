@@ -338,6 +338,8 @@ def test_pmon_smoke(setup):
 
 
 def test_nat_smoke(setup):
+    """Verify that 'nat' feature is running according to INCLUDE_NAT (build_metadata.yaml).
+        If so, make basic NAT configuration and verify that configuration is applied"""
     duthost = setup['duthost']
     config = setup['config']
     build_flag = "INCLUDE_NAT"
@@ -376,6 +378,8 @@ def test_nat_smoke(setup):
 
 
 def test_radius_smoke(setup):
+    """Verify that 'radius' feature is running according to INCLUDE_RADIUS (build_metadata.yaml).
+        If so, make basic RADIUS configuration and verify that configuration is applied"""
     duthost = setup['duthost']
     config = setup['config']
     build_flag = "INCLUDE_RADIUS"
@@ -413,6 +417,8 @@ def test_radius_smoke(setup):
 
 
 def test_ntp_smoke(setup):
+    """Verify that 'ntp' feature is running according to INCLUDE_NTP (build_metadata.yaml).
+        If so, make basic NTP feature checks and verify"""
     duthost = setup['duthost']
     config = setup['config']
     build_flag = "INCLUDE_NTP"
@@ -442,6 +448,8 @@ def test_ntp_smoke(setup):
 
 
 def test_snmp_smoke(setup):
+    """Verify that 'cnmp' container is running according to INCLUDE_SNMP (build_metadata.yaml).
+        If so, make basic SNMP configuration and verify that configuration is applied"""
     duthost = setup['duthost']
     config = setup['config']
     container = "snmp"
@@ -483,6 +491,9 @@ def test_snmp_smoke(setup):
 
 
 def test_lldp_smoke(setup):
+    """Verify that 'LLDP' container is running according to INCLUDE_LLDP (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart).
+        Verify that 'lldpd' process is running."""
     duthost = setup['duthost']
     config = setup['config']
     container = "lldp"
@@ -505,6 +516,8 @@ def test_lldp_smoke(setup):
 
 
 def test_mgmt_framework_smoke(setup):
+    """Verify that 'mgmt framework' container is running according to INCLUDE_MGMT_FRAMEWORK (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart)."""
     duthost = setup['duthost']
     config = setup['config']
     container = "mgmt-framework"
@@ -524,6 +537,8 @@ def test_mgmt_framework_smoke(setup):
 
 
 def test_restapi_smoke(setup):
+    """Verify that 'RESTAPI' container is running according to INCLUDE_RESTAPI (build_metadata.yaml).
+        Check 'docker events' and make sure that container is stable (no restart)."""
     duthost = setup['duthost']
     config = setup['config']
     build_flag = "INCLUDE_RESTAPI"
