@@ -370,10 +370,10 @@ def test_nat_smoke(setup):
         # Change NAT state and check it
         run_shell_helper(duthost, shell_conf_nat_feature + " " + new_nat_state)
         res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "CLI \"{}\" command error".format(shell_show_nat_state), do_assert=True)
-        pytest_assert(new_nat_state == res_show_nat_state['stdout'], "Error while changing NAT feature state")
+        pytest_assert(new_nat_state + "d" == res_show_nat_state['stdout'], "Error while changing NAT feature state")
     finally:
         # cleanup
-        run_shell_helper(duthost, shell_conf_nat_feature + " " + original_nat_state,
+        run_shell_helper(duthost, shell_conf_nat_feature + " " + original_nat_state.rstrip(original_nat_state[-1]),
                         "Cleanup: error while NAT state ({}) to the original ({})".format(new_nat_state, original_nat_state), do_assert=True)
 
 
