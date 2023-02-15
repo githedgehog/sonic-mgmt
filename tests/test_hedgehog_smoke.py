@@ -447,7 +447,7 @@ def test_ntp_smoke(setup):
     run_shell_helper(duthost, shell_conf_ntp, "CLI \"{}\" command error".format(shell_conf_ntp), do_assert=True)
 
 
-def test_snmp_smoke(setup):
+def test_snmp_smoke(setup, loganalyzer):
     """Verify that 'snmp' container is running according to INCLUDE_SNMP (build_metadata.yaml).
         If so, make basic SNMP configuration and verify that configuration is applied"""
     duthost = setup['duthost']
@@ -460,6 +460,14 @@ def test_snmp_smoke(setup):
     snmp_test_user = "SNMPSmokeTestUser"
     shell_conf_snmp_user_add = shell_conf_snmp + " user add " + snmp_test_user + " noAuthNoPriv RO"
     shell_conf_snmp_user_del = shell_conf_snmp + " user del " + snmp_test_user
+
+    # https://github.com/sonic-net/sonic-buildimage/issues/7862
+    # loganalyzer fail for 'vs'
+    if duthost.facts['asic_type'] == "vs" and duthost.facts['hwsku'] == "Force10-S6000":
+        for host in loganalyzer:
+            loganalyzer[host].ignore_regex.append(r".*ERR wrong number of arguments for 'hset' command: Input/output error: Input/output error")
+            loganalyzer[host].ignore_regex.append(r".*ERR sonic-db-cli: :- guard: RedisReply catches system_error: command:.*ERR wrong number of arguments for 'hset' command: Input/output error")
+
 
     # Check metadata
     check_container_sanity_helper(config, container)
