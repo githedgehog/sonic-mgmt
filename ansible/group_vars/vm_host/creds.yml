@@ -5,6 +5,7 @@ ansible_become_password: use_own_value
 
 # Use the following username/password variables to login to vm hosts
 # instead of the default variables (defined above).
+# todo(adovhan) check this password to VMs
 vm_host_user: hedgehog
 vm_host_password: githedgehog
 vm_host_become_password: githedgehog

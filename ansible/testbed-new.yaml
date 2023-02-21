@@ -143,7 +143,7 @@ devices:
             username:                 
             password:               
         ansible:
-            ansible_host: 10.251.0.245/23           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+            ansible_host: 10.251.0.245/23           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv todo(adovhan) update ip, the same as in STR-ACS-SERV-01.yaml
             ansible_ssh_pass: password              # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             ansible_become_pass: password           # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             sonicadmin_user: admin                  # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
@@ -217,7 +217,7 @@ host_vars:
     str-acs-serv-01:
         mgmt_bridge: br1                # source: sonic-mgmt/host_vars
         mgmt_prefixlen: 24              # source: sonic-mgmt/host_vars
-        mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars
+        mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars todo(adovhan) update ip, external port
         external_port: ens3f0           # source: sonic-mgmt/host_vars
 
 # veos_groups is a dictionary that contains all veos groups
@@ -425,6 +425,17 @@ veos:
 # testbed is used to generate testbed.csv
 # testbed dictionary does not cross reference with other files 
 testbed:
+    01-t0: # source: sonic-mgmt/ansible/testbed.csv
+        group-name: vms1-t0                                 # source: sonic-mgmt/ansible/testbed.csv
+        topo: t0                                            # source: sonic-mgmt/ansible/testbed.csv
+        ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
+        ptf: ptf_vms1-1
+        ptf_ip: 10.250.128.196/24                           # source: sonic-mgmt/ansible/testbed.csv
+        server: server_1                                    # source: sonic-mgmt/ansible/testbed.csv
+        vm_base: VM0100                                     # source: sonic-mgmt/ansible/testbed.csv
+        dut: dut_cls_dx010-01                               # source: sonic-mgmt/ansible/testbed.csv
+        comment: Hedgehog T0 topology VMAccel Testbed 01
+
     ptf1-m:
         group-name: ptf1                                    # source: sonic-mgmt/ansible/testbed.csv
         topo: ptf32                                         # source: sonic-mgmt/ansible/testbed.csv
@@ -529,6 +540,211 @@ testbed:
 # topology is used to generate sonic_lab_links
 # topology dictionary does not cross reference with other files 
 topology:                               # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
+    # todo(adovhan) recheck DUT ports
+    dut_cls_dx010-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv  # ports that goes to TESTBED SERVER
+        interfaces: # DUT/ start device
+            Ethernet0:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/2/1
+                Bandwidth: 10000
+                VlanID: 1681
+                VlanMode: Access
+            Ethernet4:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/2/2
+                Bandwidth: 10000
+                VlanID: 1682
+                VlanMode: Access
+            Ethernet8:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/2/3
+                Bandwidth: 10000
+                VlanID: 1683
+                VlanMode: Access
+            Ethernet12:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/2/4
+                Bandwidth: 10000
+                VlanID: 1684
+                VlanMode: Access
+            Ethernet16:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/3/1
+                Bandwidth: 10000
+                VlanID: 1685
+                VlanMode: Access
+            Ethernet20:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/3/2
+                Bandwidth: 10000
+                VlanID: 1686
+                VlanMode: Access
+            Ethernet24:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/3/3
+                Bandwidth: 10000
+                VlanID: 1687
+                VlanMode: Access
+            Ethernet28:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/3/4
+                Bandwidth: 10000
+                VlanID: 1688
+                VlanMode: Access
+            Ethernet32:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/4/1
+                Bandwidth: 10000
+                VlanID: 1689
+                VlanMode: Access
+            Ethernet36:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/4/2
+                Bandwidth: 10000
+                VlanID: 1690
+                VlanMode: Access
+            Ethernet40:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/4/3
+                Bandwidth: 10000
+                VlanID: 1691
+                VlanMode: Access
+            Ethernet44:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/4/4
+                Bandwidth: 10000
+                VlanID: 1692
+                VlanMode: Access
+            Ethernet48:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/5
+                Bandwidth: 40000
+                VlanID: 1693
+                VlanMode: Access
+            Ethernet52:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/6
+                Bandwidth: 40000
+                VlanID: 1694
+                VlanMode: Access
+            Ethernet56:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/7
+                Bandwidth: 40000
+                VlanID: 1695
+                VlanMode: Access
+            Ethernet60:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/8
+                Bandwidth: 40000
+                VlanID: 1696
+                VlanMode: Access
+            Ethernet64:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/9
+                Bandwidth: 40000
+                VlanID: 1697
+                VlanMode: Access
+            Ethernet68:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/10
+                Bandwidth: 40000
+                VlanID: 1698
+                VlanMode: Access
+            Ethernet72:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/11
+                Bandwidth: 40000
+                VlanID: 1699
+                VlanMode: Access
+            Ethernet76:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/12
+                Bandwidth: 40000
+                VlanID: 1700
+                VlanMode: Access
+            Ethernet80:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/13
+                Bandwidth: 40000
+                VlanID: 1701
+                VlanMode: Access
+            Ethernet84:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/14
+                Bandwidth: 40000
+                VlanID: 1702
+                VlanMode: Access
+            Ethernet88:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/15
+                Bandwidth: 40000
+                VlanID: 1703
+                VlanMode: Access
+            Ethernet92:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/16
+                Bandwidth: 40000
+                VlanID: 1704
+                VlanMode: Access
+            Ethernet96:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/17
+                Bandwidth: 40000
+                VlanID: 1705
+                VlanMode: Access
+            Ethernet100:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/18
+                Bandwidth: 40000
+                VlanID: 1706
+                VlanMode: Access
+            Ethernet104:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/19
+                Bandwidth: 40000
+                VlanID: 1707
+                VlanMode: Access
+            Ethernet108:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/20
+                Bandwidth: 40000
+                VlanID: 1708
+                VlanMode: Access
+            Ethernet112:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/21
+                Bandwidth: 40000
+                VlanID: 1709
+                VlanMode: Access
+            Ethernet116:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/22
+                Bandwidth: 40000
+                VlanID: 1710
+                VlanMode: Access
+            Ethernet120:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/23
+                Bandwidth: 40000
+                VlanID: 1711
+                VlanMode: Access
+            Ethernet124:
+                EndDevice: fnt_csc_c3132q-01
+                EndPort: Ethernet1/24
+                Bandwidth: 40000
+                VlanID: 1712
+                VlanMode: Access
+
+    fnt_csc_c3132q-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
+        interfaces: # DUT/ start device
+            Ethernet1/1:  # todo(adovhan) update port fanout and endPort
+                EndDevice: str-acs-serv-01
+                EndPort: ensp?
+                Bandwidth: 10000
+                VlanID: 1681-1712
+                VlanMode: Trunk
+
     str-msn2700-01:                     # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
         interfaces:                     # DUT/ start device
             Ethernet0:
@@ -724,20 +940,21 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
                 VlanID: 1712
                 VlanMode: Access
 
-    str-7260-11:                        # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
-        interfaces:                     # DUT/ start device
-            Ethernet19:
-                EndDevice: str-acs-serv-01
-                EndPort: p4p1
-                Bandwidth: 40000
-                VlanID: 
-                VlanMode: Trunk
-            Ethernet30:
-                EndDevice: str-7260-10
-                EndPort: Ethernet64
-                Bandwidth: 40000 
-                VlanID: 1681-1712
-                VlanMode: Trunk
+# todo(adovhan) it can be removed, I guess. we don't have rootFanout
+#    str-7260-11:                        # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
+#        interfaces:                     # DUT/ start device
+#            Ethernet19:
+#                EndDevice: str-acs-serv-01
+#                EndPort: p4p1
+#                Bandwidth: 40000
+#                VlanID:
+#                VlanMode: Trunk
+#            Ethernet30:
+#                EndDevice: str-7260-10
+#                EndPort: Ethernet64
+#                Bandwidth: 40000
+#                VlanID: 1681-1712
+#                VlanMode: Trunk
 
 # docker_registry is optional. It is not necessary unless you want to change the default location of the docker-registry.
 # docker_registry dictionary contains information about the host, username, and password
