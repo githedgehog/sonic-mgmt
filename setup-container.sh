@@ -248,6 +248,10 @@ RUN if [ '{{ USER_NAME }}' != 'AzDevOps' ] && [ -d /var/AzDevOps/env-python3 ]; 
 /bin/bash -c '${HOME}/env-python3/bin/pip install $(/var/AzDevOps/env-python3/bin/pip freeze)'; \
 fi
 
+# Download allurectl for uploading test result on 'testops'
+RUN /usr/local/sbin/wget https://github.com/allure-framework/allurectl/releases/latest/download/allurectl_linux_386 -O /opt/allurectl
+RUN chmod +x /opt/allurectl
+
 EOF
 
     log_info "prepare an environment file: ${TMP_DIR}/data.env"
