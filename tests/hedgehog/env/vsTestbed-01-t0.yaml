@@ -6,7 +6,7 @@
   "conf_name": "vms-kvm-t0"
   "topo": "t0,any"
   "host_pattern": "vlab-01"
-  "report_base_dir": "/data/sonic-mgmt/report/vsTestbed-01/"
+  "report_base_dir": "/data/sonic-mgmt/report/vsTestbed-01/t0/"
 "testops":
   "tag": "generated dynamically in runner.py"
   "endpoint": "https://hedgehog.testops.cloud"
