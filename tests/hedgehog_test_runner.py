@@ -1,28 +1,11 @@
-import getopt
+import argparse
 import subprocess
 import sys
 
 import paramiko
 import yaml
 
-# structure of yaml
-# "vms-kvm-t0":
-#   "acl":
-#     - "test_stress_acl.py"
-# "01-t0": - not implemented yet
-PATH_TO_AVAILABLE_TESTS = "hedgehog_test_list.yaml"
-PATH_TO_BUILD_METADATA = "/etc/sonic/build_metadata.yaml"
-PATH_TO_CREDS = "../ansible/group_vars/lab/secrets.yml"
-DUT_IP = "10.250.0.101"  # todo: keep all conf in testbed.csv and get topo and ip from this file
-ALLOWED_TOPO = ['vms-kvm-t0']  # todo in future '01-t0', '01-t1', '01-ptf'
-
-# will be defined below
-CMD_TO_RUN = ""
-TESTS_TO_RUN = []
-TOPO = None
-REPORT_DIR = None
-AVAILABLE_TESTS = None
-METADATA = None
+FULL_REPORT_DIR_PATH = ""
 
 
 def read_yaml(path):
@@ -33,33 +16,36 @@ def read_yaml(path):
             print(exc)
 
 
-def read_metadata(path):
-    global METADATA
-    creds = read_yaml(PATH_TO_CREDS)
-    ssh_username = creds['sonicadmin_user']
-    ssh_password = creds['sonicadmin_password']
+def read_metadata(testbed_data):
+    metadata = False
+    dut_ip = testbed_data["testbed"]["dut_ip"]
+    username = testbed_data["testbed"]["username"]
+    password = testbed_data["testbed"]["password"]
+    path_to_metadata = "/etc/sonic/build_metadata.yaml"
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(DUT_IP, username=ssh_username, password=ssh_password, look_for_keys=False)
-        stdin, stdout, stderr = ssh.exec_command("cat {}".format(path))
+        ssh.connect(dut_ip, username=username, password=password, look_for_keys=False)
+        stdin, stdout, stderr = ssh.exec_command("cat {}".format(path_to_metadata))
         if stdout.channel.recv_exit_status() == 0:
-            METADATA = yaml.safe_load(stdout.read().decode('utf-8'))
+            metadata = yaml.safe_load(stdout.read().decode('utf-8'))
     except paramiko.AuthenticationException:
         print("SSH connect failed. Make sure use the expected password according to the SONiC image.")
         raise
     finally:
         ssh.close()
 
+    return metadata
 
-def generate_test_list():
-    # todo create enum for INCLUDE_* flags and use them here and in hedgehog_smoke_test
-    test_dictionary = dict(AVAILABLE_TESTS[TOPO].items())
+
+def generate_test_list(testbed_data, metadata):
+    test_dictionary = dict(testbed_data["pytest_param"]["tests"])
+    tests_to_run = []
     # remove tests in case feature is disabled
     # by default all available test are going to be run, otherwise explicitly delete
-    if METADATA:
-        metadata_config = METADATA['Configuration']
+    if metadata:
+        metadata_config = metadata['Configuration']
         if metadata_config['INCLUDE_SNMP'] == 'n':
             test_dictionary.pop('snmp', None)
             test_dictionary.pop('cacl', None)
@@ -70,63 +56,84 @@ def generate_test_list():
     for key, value in test_dictionary.items():
         for test_name in value:
             if key == 'root_dir':
-                TESTS_TO_RUN.append(f"./{test_name}")
+                tests_to_run.append(f"./{test_name}")
             else:
-                TESTS_TO_RUN.append(f"./{key}/{test_name}")
+                tests_to_run.append(f"./{key}/{test_name}")
+
+    return tests_to_run
 
 
-def build_cmd_to_run():
-    global CMD_TO_RUN
-    CMD_TO_RUN = f"export ANSIBLE_CONFIG=../ansible; export ANSIBLE_LIBRARY=../ansible; pytest --inventory ../ansible/veos_vtb --host-pattern vlab-01 --testbed {TOPO} --testbed_file vtestbed.yaml --log-cli-level warning --log-file-level debug --showlocals --assert plain --show-capture no -rav --allow_recover --topology t0,any --module-path ../ansible/library --skip_sanity"
-    test_list = " ".join(TESTS_TO_RUN)
-    CMD_TO_RUN += f" {test_list}"
-    CMD_TO_RUN += f" --alluredir {REPORT_DIR}"
+def build_run_test_cmd(testbed_data, test_list, report_dir_name):
+    testbed = testbed_data["testbed"]
+    pytest_param = testbed_data["pytest_param"]
+    global FULL_REPORT_DIR_PATH
+    FULL_REPORT_DIR_PATH = "{}/{}".format(testbed["report_base_dir"], report_dir_name)
+    allure_dir_option = " --alluredir {} ".format(FULL_REPORT_DIR_PATH)
+    extra_param = " ".join(pytest_param["extra"]) + allure_dir_option
+
+    cmd = "./run_tests.sh -n {} -d {} -t {} -u -O ".format(testbed["conf_name"],
+                                                           testbed["host_pattern"],
+                                                           testbed["topo"])
+    cmd += " ".join(pytest_param["common"])
+    cmd += " -c '{}' ".format(" ".join(test_list))
+    cmd += " -e '{}' ".format(extra_param)
+
+    return cmd
 
 
-def run_test():
-    global CMD_TO_RUN
-    print(CMD_TO_RUN)
-    subprocess.run(CMD_TO_RUN, shell=True, universal_newlines=True)
+def run_cmd(cmd, print_only):
+    if print_only:
+        print(cmd)
+    else:
+        subprocess.run(cmd, shell=True, universal_newlines=True)
+
+
+def build_allurectl_cmd(testbed_data, metadata, launch_name, token):
+    data = testbed_data["testops"]
+    cmd = "/opt/allurectl upload "
+    cmd += "--endpoint {} ".format(data['endpoint'])
+    cmd += "--token {} ".format(token)
+    cmd += "--project-id {} ".format(data['project_id'])
+    cmd += "--launch-name {} ".format(launch_name)
+    testbed_name = testbed_data["name"]
+    if metadata:
+        # setup_name = metadata["spec"]["usecase"]
+        # launch_tag = f"{testbed_name}_{setup_name}"  # => vsTestbed-01-t0_<setup_name>
+        launch_tag = f"{testbed_name}_default-img"
+        cmd += "--launch-tags {} ".format(launch_tag)
+    else:
+        cmd += "--launch-tags {}_outside_img ".format(testbed_name)
+
+    cmd += FULL_REPORT_DIR_PATH
+
+    return cmd
 
 
 def main(argv):
-    global AVAILABLE_TESTS
-    help_msg = "./hedgehog_test_runner.py -t <topo: [{}]> -r <path to report dir>".format('|'.join(ALLOWED_TOPO))
-    found_t, found_r = False, False
-    try:
-        opts, args = getopt.getopt(argv, "ht:r:", ["topo=", "report_dir="])
-    except getopt.GetoptError:
-        print('Error: unexpected option(s)')
-        print(help_msg)
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print(help_msg)
-            sys.exit()
-        elif opt in ("-t", "--topo"):
-            global TOPO
-            TOPO = arg.lower()
-            found_t = True
-            if TOPO not in ALLOWED_TOPO:
-                print(f"Topo: {TOPO}")
-                print('Error: incorrect topo')
-                print(help_msg)
-                sys.exit(2)
-        elif opt in ("-r", "--report_dir"):
-            global REPORT_DIR
-            REPORT_DIR = arg
-            found_r = True
-    if not found_t or not found_r:
-        print("'--topo' or --'report_dir' is not passed")
-        print(help_msg)
-        sys.exit(2)
-    read_metadata(PATH_TO_BUILD_METADATA)
-    AVAILABLE_TESTS = read_yaml(PATH_TO_AVAILABLE_TESTS)
-    generate_test_list()
-    build_cmd_to_run()
-    run_test()
-    print(f"TOPO: {TOPO}")
-    print(f"REPORT_DIR: {REPORT_DIR}")
+    example_text = '''Example:
+    ./hedgehog_test_runner.py --testbed hedgehog/env/vsTestbed-01-t0.yaml --report_dir_name vs_test --print True 
+    --launch_name [73]202205_dev.173-0e4b738fd --allurectl_token <token> '''
+    parser = argparse.ArgumentParser(epilog=example_text)
+    parser.add_argument("--testbed", help="testbed config file", required=True)
+    parser.add_argument("--report_dir_name", help="report directory name", required=True)
+    parser.add_argument("--launch_name", help="launch_name [test build]<version>.<build>-<commit_id>", required=True)
+    parser.add_argument("--allurectl_token", help="token for allurectl", required=True)
+    parser.add_argument("--print", help="print pytest cmd only", default=False, required=False, type=bool,
+                        choices=[True, False])
+    args = parser.parse_args()
+    is_print_only = args.print
+
+    testbed = read_yaml(args.testbed)
+    metadata = read_metadata(testbed)
+
+    # run tests
+    tests_to_run = generate_test_list(testbed, metadata)
+    test_run_cmd = build_run_test_cmd(testbed, tests_to_run, args.report_dir_name)
+    run_cmd(test_run_cmd, is_print_only)
+
+    # uplaod result into testops via `allurectl`
+    allurectl_upload_cmd = build_allurectl_cmd(testbed, metadata, args.launch_name, args.allurectl_token)
+    run_cmd(allurectl_upload_cmd, is_print_only)
 
 
 if __name__ == "__main__":
