@@ -11,7 +11,7 @@
   "tag": "generated dynamically in runner.py"
   "endpoint": "https://hedgehog.testops.cloud"
   "token": "it takes from argument for runner.py"
-  "project_id": "133"
+  "project_id": "166"
   "launch_name": "read from argument(runner.py), just for passing number of build(img,test): [build run test]<version>.<build>-<commit_id> [123]202205_dev.173-0e4b738fd"
 "pytest_param":
   "common":
