@@ -248,6 +248,9 @@ RUN if [ '{{ USER_NAME }}' != 'AzDevOps' ] && [ -d /var/AzDevOps/env-python3 ]; 
 /bin/bash -c '${HOME}/env-python3/bin/pip install $(/var/AzDevOps/env-python3/bin/pip freeze)'; \
 fi
 
+# Install pyyaml, it used by hedgehog_test_runner.py. do not use env-python3, it is virt env for ptf container.
+RUN /usr/local/sbin/pip3 install pyyaml
+
 # Download allurectl for uploading test result on 'testops'
 RUN /usr/local/sbin/wget https://github.com/allure-framework/allurectl/releases/latest/download/allurectl_linux_386 -O /opt/allurectl
 RUN chmod +x /opt/allurectl
