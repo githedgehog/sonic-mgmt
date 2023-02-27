@@ -20,6 +20,20 @@ def rename_directory(path_with_target):
     return new_dir_name
 
 
+def create_metadata_symlink(path):
+    # find build_metadata.yaml file
+    name = "build_metadata.yaml"
+    os.chdir(path)
+    metadata_path = ""
+    current_dir = "."
+    for root, dirs, files in os.walk(current_dir):
+        if name in files:
+            metadata_path = os.path.join(root, name)
+
+    # create symlink, to avoid copying
+    os.symlink(metadata_path, name)
+
+
 def create_and_move_dir(parent_dir, dir_to_move):
     # mv foo -> sonic/foo
     root_dir = 'sonic'
@@ -67,6 +81,9 @@ def main(argv):
 
     path_with_target = args.path_to_artifact_dir
     parent_dir = os.path.dirname(args.path_to_artifact_dir)
+
+    # create symlink for build_metadata
+    create_metadata_symlink("", path_with_target)
 
     # rename target -> to uuid4
     new_target_dir_name = rename_directory(path_with_target)
