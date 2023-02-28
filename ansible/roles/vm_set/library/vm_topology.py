@@ -508,6 +508,12 @@ class VMTopology(object):
             if mgmt_gw:
                 if api_server_pid:
                     VMTopology.cmd("nsenter -t %s -n ip route del default" % (self.pid))
+                
+                #res_ip_a = VMTopology.cmd("nsenter -t %s -n ip a s" % (self.pid)))
+                #with open("/tmp/adovhan.txt", "w") as f:
+                #    for w in res_ip_a:
+                #        f.write(w)
+
                 VMTopology.cmd("nsenter -t %s -n ip route add default via %s dev %s" % (self.pid, mgmt_gw, int_if))
             if mgmt_ipv6_addr:
                 VMTopology.cmd("nsenter -t %s -n ip -6 addr flush dev %s" % (self.pid, int_if))

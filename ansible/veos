@@ -63,7 +63,7 @@ all:
 vm_host_1:
   hosts:
     STR-ACS-SERV-01:
-      ansible_host: 10.250.0.1
+      ansible_host: 10.250.7.44
 
 vm_host_2:
   hosts:

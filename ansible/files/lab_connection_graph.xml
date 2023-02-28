@@ -3,7 +3,6 @@
     <Devices>
       <Device Hostname="dut_cls_dx010-01" HwSku="Seastone-DX010" Type="DevSonic"/>
       <Device Hostname="fnt_csc_c3132q-01" HwSku="cisco-Nexus3000-C3132Q" Type="FanoutLeaf"/>
-<!--      <Device Hostname="dev-7260-11" HwSku="Arista-7260QX-64" Type="FanoutRoot"/>-->
       <Device Hostname="str-acs-serv-01" HwSku="TestServ" Type="Server"/>
     </Devices>
     <DeviceInterfaceLinks>

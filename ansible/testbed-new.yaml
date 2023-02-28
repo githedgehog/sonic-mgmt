@@ -85,6 +85,20 @@ device_groups:
 # devices is used to export sonic_lab_devices, fanout/secrets, lab/secrets, lab
 # there are no cross references
 devices:
+    fnt_csc_c3132q-01:
+        device_type: FanoutLeaf
+        hwsku: cisco-Nexus3000-C3132Q                     # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+        alias:             
+        credentials:                        
+            username:                 
+            password:               
+        ansible:
+            ansible_host: 10.10.0.21/22            # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+            ansible_ssh_user: user                  # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+            ansible_ssh_pass: password              # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+            fanout_sonic_user: admin                # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+            fanout_sonic_password: password
+
     str-msn2700-01:                         
         device_type: DevSonic                       # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv      
         hwsku: Mellanox-2700                        # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
@@ -149,7 +163,7 @@ devices:
             username:                 
             password:               
         ansible:
-            ansible_host: 10.250.0.1/24             # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+            ansible_host: 10.250.7.44/16             # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
             ansible_ssh_pass: password              # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             ansible_become_pass: password           # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             sonicadmin_user: admin                  # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
@@ -235,8 +249,8 @@ devices:
 host_vars:
     str-acs-serv-01:
         mgmt_bridge: br1                # source: sonic-mgmt/host_vars
-        mgmt_prefixlen: 24              # source: sonic-mgmt/host_vars
-        mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars todo(adovhan) update ip, external port
+        mgmt_prefixlen: 16              # source: sonic-mgmt/host_vars
+        mgmt_gw: 10.250.7.44            # source: sonic-mgmt/host_vars todo(adovhan) update ip, external port
         external_port: ens3f0           # source: sonic-mgmt/host_vars
 
 # veos_groups is a dictionary that contains all veos groups
@@ -449,7 +463,7 @@ testbed:
         topo: t0                                            # source: sonic-mgmt/ansible/testbed.csv
         ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
         ptf: ptf_vms1-1
-        ptf_ip: 10.250.128.196/24                           # source: sonic-mgmt/ansible/testbed.csv
+        ptf_ip: 10.250.128.196/16                           # source: sonic-mgmt/ansible/testbed.csv
         server: server_1                                    # source: sonic-mgmt/ansible/testbed.csv
         vm_base: VM0100                                     # source: sonic-mgmt/ansible/testbed.csv
         dut: dut_cls_dx010-01                               # source: sonic-mgmt/ansible/testbed.csv
