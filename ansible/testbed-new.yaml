@@ -50,7 +50,13 @@ device_groups:
         vars:
             mgmt_subnet_mask_length: "24"                        # source: sonic-mgmt/ansible/lab
     sonic:
-        children: [sonic_s6000, sonic_s6100, sonic_sn2700_40, sonic_a7260]      # source: sonic-mgmt/ansible/lab
+        children: [sonic_dx010, sonic_s6000, sonic_s6100, sonic_sn2700_40, sonic_a7260]      # source: sonic-mgmt/ansible/lab
+    sonic_dx010:
+        host: [dut_cls_dx010-01]             # source: sonic-mgmt/ansible/lab
+        vars:
+            hwsku: "Seastone-DX010"                           # source: sonic-mgmt/ansible/lab
+            iface_speed: '40000'                                # source: sonic-mgmt/ansible/lab
+            iface_speed2: '100000'                               # source: sonic-mgmt/ansible/lab
     sonic_s6000:
         host: [lab-s6000-01,lab-s6000-02]                        # source: sonic-mgmt/ansible/lab
         vars:
@@ -71,7 +77,7 @@ device_groups:
         vars:
             iface_speed: '100000'                                # source: sonic-mgmt/ansible/lab
     fanout:
-        host: [str-7260-10, str-7260-11, str-msn2700-02]         # source: sonic-mgmt/ansible/lab
+        host: [fnt_csc_c3132q-01, str-7260-10, str-7260-11, str-msn2700-02]         # source: sonic-mgmt/ansible/lab
     ptf:
         host: [ptf_ptf1, ptf_vms1-1]                             # source: sonic-mgmt/ansible/lab
 

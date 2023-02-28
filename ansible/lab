@@ -23,7 +23,7 @@ all:
 sonic_dx010:
   vars:
     hwsku: Seastone-DX010
-    iface_speed: 10000
+    iface_speed: 40000
     iface_speed2: 100000
     ansible_password: YourPaSsWoRd
     ansible_user: admin
