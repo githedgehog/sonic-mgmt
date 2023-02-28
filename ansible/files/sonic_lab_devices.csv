@@ -1,8 +1,7 @@
 Hostname,ManagementIp,HwSku,Type,Protocol
 dut_cls_dx010-01,10.10.1.65/22,Seastone-DX010,DevSonic,
 fnt_csc_c3132q-01,10.10.0.21/22,cisco-Nexus3000-C3132Q,FanoutLeaf,
-str-acs-serv-01,10.10.1.??/22,TestServ,Server,
-# todo(adovhan) set correct ip for server
+str-acs-serv-01,10.250.0.1/24,TestServ,Server,
 # dev-msn2700-01,10.251.0.188/23,Mellanox-2700,DevSonic,
 # dev-7260-10,10.251.0.13/23,Arista-7260QX-64,FanoutLeaf,
 # dev-7260-11,10.251.0.234/23,Arista-7260QX-64,FanoutRoot,

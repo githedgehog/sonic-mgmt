@@ -143,7 +143,7 @@ devices:
             username:                 
             password:               
         ansible:
-            ansible_host: 10.251.0.245/23           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv todo(adovhan) update ip, the same as in STR-ACS-SERV-01.yaml
+            ansible_host: 10.250.0.1/24             # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
             ansible_ssh_pass: password              # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             ansible_become_pass: password           # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             sonicadmin_user: admin                  # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
@@ -209,6 +209,19 @@ devices:
             sonicadmin_user: 
             sonicadmin_password: 
             sonicadmin_initial_password: 
+
+    dut_cls_dx010-01:
+        device_type: DevSonic                       # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+        hwsku: Seastone-DX010                        # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+        alias:
+        credentials:
+            username: admin
+            password: YourPaSsWoRd
+            enable_password:
+        ansible:
+            ansible_host:  10.10.1.65/22           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+            ansible_ssh_user: admin
+            ansible_ssh_pass: YourPaSsWoRd
 
 # host_vars is a dictionary that contains all host_var values
 # host_vars is used to export the host_vars files
@@ -740,7 +753,7 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
         interfaces: # DUT/ start device
             Ethernet1/1:  # todo(adovhan) update port fanout and endPort
                 EndDevice: str-acs-serv-01
-                EndPort: ensp?
+                EndPort: eno2
                 Bandwidth: 10000
                 VlanID: 1681-1712
                 VlanMode: Trunk
