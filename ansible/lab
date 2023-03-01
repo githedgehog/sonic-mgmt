@@ -7,7 +7,7 @@ all:
         sonic:
           children:
             sonic_sn2700_40:
-            sonic_dx010:
+            sonic_cls_dx010:
         fanout:
           hosts:
             fnt_csc_c3132q-01:
@@ -15,24 +15,24 @@ all:
 
     ptf:
       hosts:
-        ptf_vms1-1:
+        ptf_vms1-t0:
           ansible_host: 10.255.0.196
           ansible_ssh_user: root
           ansible_ssh_pass: root
 
-sonic_dx010:
+sonic_cls_dx010:
   vars:
     hwsku: Seastone-DX010
     iface_speed: 40000
     iface_speed2: 100000
     ansible_password: YourPaSsWoRd
     ansible_user: admin
-hosts:
+  hosts:
     dut_cls_dx010-01:
       ansible_host: 10.10.1.65
       ansible_ssh_user: admin
       ansible_ssh_pass: YourPaSsWoRd
-      ptf_host: ptf_vms1-1
+      ptf_host: ptf_vms1-t0
       model: DX010
       serial: DX010B2F108423LK100020
       base_mac: 00:E0:EC:8A:0D:F0

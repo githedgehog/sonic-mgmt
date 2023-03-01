@@ -1,18 +1,4 @@
 ---
-- conf-name: 01-t0
-  group-name: vms1-t0
-  topo: t0
-  ptf_image_name: docker-ptf
-  ptf: ptf_vms1-1
-  ptf_ip: 10.250.128.196/16
-  ptf_ipv6:
-  server: server_1
-  vm_base: VM0100
-  dut:
-    - dut_cls_dx010-01
-  inv_name: lab
-  auto_recover: 'False'
-  comment: Hedgehog T0 topology VMAccel Testbed 01
 
 - conf-name: ptf1-m
   group-name: ptf1
@@ -210,18 +196,17 @@
   auto_recover: 'True'
   comment: Test ptf ANVL SONIC VM
 
-- conf-name: vms-chassis-packet-dut
-  group-name: vms-dummy-dut
-  topo: t2
+- conf-name: 01-t0
+  group-name: vms1-t0
+  topo: t0
   ptf_image_name: docker-ptf
-  ptf: ptf-unknown
-  ptf_ip: 1.1.1.1/23
+  ptf: ptf_vms1-t0
+  ptf_ip: 10.250.128.196/16
   ptf_ipv6:
-  server: dummy_1
-  vm_base: DUMMY0001
+  server: server_1
+  vm_base: VM0100
   dut:
-    - lab-msft-lc0-1
-    - lab-msft-lc1-1
-    - lab-msft-lc2-1
-    - lab-msft-sup-1
-  comment: Chasiss Testbed
+    - dut_cls_dx010-01
+  inv_name: lab
+  auto_recover: 'False'
+  comment: Hedgehog T0 topology VMAccel Testbed 01

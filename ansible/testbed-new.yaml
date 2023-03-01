@@ -79,7 +79,7 @@ device_groups:
     fanout:
         host: [fnt_csc_c3132q-01, str-7260-10, str-7260-11, str-msn2700-02]         # source: sonic-mgmt/ansible/lab
     ptf:
-        host: [ptf_ptf1, ptf_vms1-1]                             # source: sonic-mgmt/ansible/lab
+        host: [ptf_ptf1, ptf_vms1-t0]                             # source: sonic-mgmt/ansible/lab
 
 # devices is a dictionary that contains all devices and hosts but not ptfs (ptfs found under testbed)
 # devices is used to export sonic_lab_devices, fanout/secrets, lab/secrets, lab
@@ -462,7 +462,7 @@ testbed:
         group-name: vms1-t0                                 # source: sonic-mgmt/ansible/testbed.csv
         topo: t0                                            # source: sonic-mgmt/ansible/testbed.csv
         ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
-        ptf: ptf_vms1-1
+        ptf: ptf_vms1-t0
         ptf_ip: 10.250.128.196/16                           # source: sonic-mgmt/ansible/testbed.csv
         server: server_1                                    # source: sonic-mgmt/ansible/testbed.csv
         vm_base: VM0100                                     # source: sonic-mgmt/ansible/testbed.csv
