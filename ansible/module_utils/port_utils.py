@@ -177,8 +177,40 @@ def get_port_alias_to_name_map(hwsku, asic_name=None):
             for i in range(1, 33):
                 port_alias_to_name_map["etp%d" % i] = "Ethernet%d" % ((i - 1) * 4)
         elif hwsku == "Seastone-DX010":
-            for i in range(1, 33):
-                port_alias_to_name_map["Eth%d" % i] = "Ethernet%d" % ((i - 1) * 4)
+            # for i in range(1, 33):
+            #     port_alias_to_name_map["Eth%d" % i] = "Ethernet%d" % ((i - 1) * 4)
+            port_alias_to_name_map["Ethernet4"] = "Ethernet4"
+            port_alias_to_name_map["Ethernet5"] = "Ethernet5"
+            port_alias_to_name_map["Ethernet6"] = "Ethernet5"
+            port_alias_to_name_map["Ethernet7"] = "Ethernet7"
+            port_alias_to_name_map["Ethernet8"] = "Ethernet9"
+            port_alias_to_name_map["Ethernet9"] = "Ethernet9"
+            port_alias_to_name_map["Ethernet10"] = "Ethernet10"
+            port_alias_to_name_map["Ethernet11"] = "Ethernet11"
+            port_alias_to_name_map["Ethernet12"] = "Ethernet12"
+            port_alias_to_name_map["Ethernet13"] = "Ethernet13"
+            port_alias_to_name_map["Ethernet14"] = "Ethernet14"
+            port_alias_to_name_map["Ethernet15"] = "Ethernet15"
+            port_alias_to_name_map["Ethernet16"] = "Ethernet16"
+            port_alias_to_name_map["Ethernet20"] = "Ethernet20"
+            port_alias_to_name_map["Ethernet24"] = "Ethernet24"
+            port_alias_to_name_map["Ethernet28"] = "Ethernet28"
+            port_alias_to_name_map["Ethernet32"] = "Ethernet32"
+            port_alias_to_name_map["Ethernet36"] = "Ethernet36"
+            port_alias_to_name_map["Ethernet40"] = "Ethernet40"
+            port_alias_to_name_map["Ethernet44"] = "Ethernet44"
+            port_alias_to_name_map["Ethernet48"] = "Ethernet48"
+            port_alias_to_name_map["Ethernet52"] = "Ethernet52"
+            port_alias_to_name_map["Ethernet56"] = "Ethernet56"
+            port_alias_to_name_map["Ethernet60"] = "Ethernet60"
+            port_alias_to_name_map["Ethernet64"] = "Ethernet64"
+            port_alias_to_name_map["Ethernet68"] = "Ethernet68"
+            port_alias_to_name_map["Ethernet72"] = "Ethernet72"
+            port_alias_to_name_map["Ethernet76"] = "Ethernet76"
+            port_alias_to_name_map["Ethernet80"] = "Ethernet80"
+            port_alias_to_name_map["Ethernet84"] = "Ethernet84"
+            port_alias_to_name_map["Ethernet88"] = "Ethernet88"
+            port_alias_to_name_map["Ethernet92"] = "Ethernet92"
         elif hwsku in ["Celestica-E1031-T48S4", "Nokia-7215", "Nokia-M0-7215"]:
             for i in range(1, 53):
                 port_alias_to_name_map["etp%d" % i] = "Ethernet%d" % ((i - 1))
