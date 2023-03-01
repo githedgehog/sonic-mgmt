@@ -6,38 +6,38 @@
       <Device Hostname="str-acs-serv-01" HwSku="TestServ" Type="Server"/>
     </Devices>
     <DeviceInterfaceLinks>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/1" StartDevice="dut_cls_dx010-01" StartPort="Ethernet0"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/2" StartDevice="dut_cls_dx010-01" StartPort="Ethernet4"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/3" StartDevice="dut_cls_dx010-01" StartPort="Ethernet8"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/4" StartDevice="dut_cls_dx010-01" StartPort="Ethernet12"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/1" StartDevice="dut_cls_dx010-01" StartPort="Ethernet16"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/2" StartDevice="dut_cls_dx010-01" StartPort="Ethernet20"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/3" StartDevice="dut_cls_dx010-01" StartPort="Ethernet24"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/4" StartDevice="dut_cls_dx010-01" StartPort="Ethernet28"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/1" StartDevice="dut_cls_dx010-01" StartPort="Ethernet32"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/2" StartDevice="dut_cls_dx010-01" StartPort="Ethernet36"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/3" StartDevice="dut_cls_dx010-01" StartPort="Ethernet40"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/4" StartDevice="dut_cls_dx010-01" StartPort="Ethernet44"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/5" StartDevice="dut_cls_dx010-01" StartPort="Ethernet48"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/6" StartDevice="dut_cls_dx010-01" StartPort="Ethernet52"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/7" StartDevice="dut_cls_dx010-01" StartPort="Ethernet56"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/8" StartDevice="dut_cls_dx010-01" StartPort="Ethernet60"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/9" StartDevice="dut_cls_dx010-01" StartPort="Ethernet64"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/10" StartDevice="dut_cls_dx010-01" StartPort="Ethernet68"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/11" StartDevice="dut_cls_dx010-01" StartPort="Ethernet72"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/12" StartDevice="dut_cls_dx010-01" StartPort="Ethernet76"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/13" StartDevice="dut_cls_dx010-01" StartPort="Ethernet80"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/14" StartDevice="dut_cls_dx010-01" StartPort="Ethernet84"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/15" StartDevice="dut_cls_dx010-01" StartPort="Ethernet88"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/16" StartDevice="dut_cls_dx010-01" StartPort="Ethernet92"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/17" StartDevice="dut_cls_dx010-01" StartPort="Ethernet96"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/18" StartDevice="dut_cls_dx010-01" StartPort="Ethernet100"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/19" StartDevice="dut_cls_dx010-01" StartPort="Ethernet104"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/20" StartDevice="dut_cls_dx010-01" StartPort="Ethernet108"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/21" StartDevice="dut_cls_dx010-01" StartPort="Ethernet112"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/22" StartDevice="dut_cls_dx010-01" StartPort="Ethernet116"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/23" StartDevice="dut_cls_dx010-01" StartPort="Ethernet120"/>
-      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/24" StartDevice="dut_cls_dx010-01" StartPort="Ethernet124"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/1" StartDevice="dut_cls_dx010-01" StartPort="Ethernet4"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/2" StartDevice="dut_cls_dx010-01" StartPort="Ethernet5"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/3" StartDevice="dut_cls_dx010-01" StartPort="Ethernet6"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/2/4" StartDevice="dut_cls_dx010-01" StartPort="Ethernet7"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/1" StartDevice="dut_cls_dx010-01" StartPort="Ethernet8"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/2" StartDevice="dut_cls_dx010-01" StartPort="Ethernet9"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/3" StartDevice="dut_cls_dx010-01" StartPort="Ethernet10"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/3/4" StartDevice="dut_cls_dx010-01" StartPort="Ethernet11"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/1" StartDevice="dut_cls_dx010-01" StartPort="Ethernet12"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/2" StartDevice="dut_cls_dx010-01" StartPort="Ethernet13"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/3" StartDevice="dut_cls_dx010-01" StartPort="Ethernet14"/>
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/4/4" StartDevice="dut_cls_dx010-01" StartPort="Ethernet15"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/5" StartDevice="dut_cls_dx010-01" StartPort="Ethernet16"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/6" StartDevice="dut_cls_dx010-01" StartPort="Ethernet20"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/7" StartDevice="dut_cls_dx010-01" StartPort="Ethernet24"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/8" StartDevice="dut_cls_dx010-01" StartPort="Ethernet28"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/9" StartDevice="dut_cls_dx010-01" StartPort="Ethernet32"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/10" StartDevice="dut_cls_dx010-01" StartPort="Ethernet36"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/11" StartDevice="dut_cls_dx010-01" StartPort="Ethernet40"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/12" StartDevice="dut_cls_dx010-01" StartPort="Ethernet44"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/13" StartDevice="dut_cls_dx010-01" StartPort="Ethernet48"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/14" StartDevice="dut_cls_dx010-01" StartPort="Ethernet52"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/15" StartDevice="dut_cls_dx010-01" StartPort="Ethernet56"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/16" StartDevice="dut_cls_dx010-01" StartPort="Ethernet60"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/17" StartDevice="dut_cls_dx010-01" StartPort="Ethernet64"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/18" StartDevice="dut_cls_dx010-01" StartPort="Ethernet68"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/19" StartDevice="dut_cls_dx010-01" StartPort="Ethernet72"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/20" StartDevice="dut_cls_dx010-01" StartPort="Ethernet76"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/21" StartDevice="dut_cls_dx010-01" StartPort="Ethernet80"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/22" StartDevice="dut_cls_dx010-01" StartPort="Ethernet84"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/23" StartDevice="dut_cls_dx010-01" StartPort="Ethernet88"/>
+      <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/24" StartDevice="dut_cls_dx010-01" StartPort="Ethernet92"/>
       <DeviceInterfaceLink BandWidth="40000" EndDevice="fnt_csc_c3132q-01" EndPort="Ethernet1/1" StartDevice="str-acs-serv-01" StartPort="eno2"/>
 <!--      todo(adovhan) update port fanout-->
     </DeviceInterfaceLinks>
