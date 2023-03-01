@@ -32,19 +32,20 @@ def pytest_sessionfinish(session, exitstatus):
         allure_server_addr = session.config.option.allure_server_addr
         allure_server_port = session.config.option.allure_server_port
         allure_server_project_id = session.config.option.allure_server_project_id
+        allure_report_dir = session.config.option.allure_report_dir
+
+        if allure_report_dir:
+            session_info_dict = {}
+            try:
+                session_info_dict = get_setup_session_info(session)
+            except Exception as err:
+                logger.warning('Can not get session info for Allure report. Error: {}'.format(err))
+
+            if session_info_dict:
+                export_session_info_to_allure(session_info_dict, allure_report_dir)
 
         if allure_server_addr:
-            allure_report_dir = session.config.option.allure_report_dir
             if allure_report_dir:
-                session_info_dict = {}
-                try:
-                    session_info_dict = get_setup_session_info(session)
-                except Exception as err:
-                    logger.warning('Can not get session info for Allure report. Error: {}'.format(err))
-
-                if session_info_dict:
-                    export_session_info_to_allure(session_info_dict, allure_report_dir)
-
                 try:
                     allure_server_obj = AllureServer(allure_server_addr, allure_server_port, allure_report_dir,
                                                      allure_server_project_id)
