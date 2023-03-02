@@ -16,27 +16,48 @@ def read_yaml(path):
             print(exc)
 
 
-def read_metadata(testbed_data):
-    metadata = False
+def run_cmd_on_dut(testbed_data, cmd):
+    result = False
     dut_ip = testbed_data["testbed"]["dut_ip"]
     username = testbed_data["testbed"]["username"]
     password = testbed_data["testbed"]["password"]
-    path_to_metadata = "/etc/sonic/build_metadata.yaml"
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         ssh.connect(dut_ip, username=username, password=password, look_for_keys=False)
-        stdin, stdout, stderr = ssh.exec_command("cat {}".format(path_to_metadata))
+        stdin, stdout, stderr = ssh.exec_command(cmd)
         if stdout.channel.recv_exit_status() == 0:
-            metadata = yaml.safe_load(stdout.read().decode('utf-8'))
+            result = stdout.read().decode('utf-8')
     except paramiko.AuthenticationException:
         print("SSH connect failed. Make sure use the expected password according to the SONiC image.")
         raise
     finally:
         ssh.close()
 
+    return result
+
+
+def read_metadata(testbed_data):
+    metadata = False
+    path_to_metadata = "/etc/sonic/build_metadata.yaml"
+    cmd = "cat {}".format(path_to_metadata)
+    metadata_plain = run_cmd_on_dut(testbed_data, cmd)
+    if metadata_plain:
+        metadata = yaml.safe_load(metadata_plain)
+
     return metadata
+
+
+def read_sonic_version(testbed_data):
+    # NOTE: sonic_version.yml is available in community image
+    path_to_sonic_version = "/etc/sonic/sonic_version.yml"
+
+    cmd = "cat {}".format(path_to_sonic_version)
+    sonic_ver_plain = run_cmd_on_dut(testbed_data, cmd)
+    sonic_ver = yaml.safe_load(sonic_ver_plain)
+
+    return sonic_ver
 
 
 def generate_test_list(testbed_data, metadata):
@@ -63,6 +84,56 @@ def generate_test_list(testbed_data, metadata):
     return tests_to_run
 
 
+def generate_launch_name(metadata, sonic_ver):
+    # required format: <channel>-<hedgehog_version>-<platform>-<git_version>-<test_type>-<build_id>
+    launch_name = ""
+    sonic_mgmt_commit_id = run_cmd("git rev-parse --short HEAD", False).stdout.strip()
+    # todo(adovhan) 'sonic_mgmt_name': need to understand where test is running(sonic-mgmt/keysight)
+    sonic_mgmt_name = "sonic-mgmt.{}".format(sonic_mgmt_commit_id)
+    if metadata:
+        # todo uncomment and remove hardcoded '202205' once it is added in metadata
+        # launch_name += "{}".format(metadata['channel'])
+        launch_name += "202205"
+        # launch_name += "-{}".format(metadata['hedgehog_version'])
+        # todo update -> ['spec']['platform'], once new build_metadata is introduced
+        launch_name += "-{}".format(metadata['Version']['Platform'])
+        launch_name += "-{}".format(metadata['Version']['SONiC_Software_Version'])  # todo update -> ['version']['SONiC.
+        launch_name += "-{}".format(sonic_mgmt_name)
+        # launch_name += "-{}".format(metadata['id'])
+    else:
+        launch_name += "{}".format(sonic_ver['release'])
+        launch_name += "-{}".format(sonic_ver['asic_type'])
+        launch_name += "-{}".format(sonic_ver['build_version'])
+        launch_name += "-{}".format(sonic_mgmt_name)
+        launch_name += "-community"
+
+    return launch_name
+
+
+def generate_launch_tags(testbed, metadata, ci_build_number):
+    tags = []
+    # todo uncomment once it is added in metadata
+    if metadata:
+        # tags.append("build-{}".format(metadata['id']))
+        # tags.append("usecase-{}".format(metadata['spec']['usecase']))
+        pass
+
+    # todo(adovhan) 'sonic_mgmt_name': need to understand where test is running(sonic-mgmt/keysight)
+    sonic_mgmt_commit_id = run_cmd("git rev-parse --short HEAD", False).stdout.strip()
+    tags.append("sonic-mgmt-{}".format(sonic_mgmt_commit_id))
+
+    topo = ''.join([x for x in testbed['testbed']['topo'].split(',') if x != 'any'])  # t0,any => t0
+    tags.append("topology-{}".format(topo))
+    tags.append(testbed['name'])
+
+    if ci_build_number != 'manual':
+        tags.append("jenkins-{}".format(ci_build_number))
+    else:
+        tags.append(ci_build_number)
+
+    return tags
+
+
 def build_run_test_cmd(testbed_data, test_list, report_dir_name):
     testbed = testbed_data["testbed"]
     pytest_param = testbed_data["pytest_param"]
@@ -85,24 +156,19 @@ def run_cmd(cmd, print_only):
     if print_only:
         print(cmd)
     else:
-        subprocess.run(cmd, shell=True, universal_newlines=True)
+        return subprocess.run(cmd, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
 
 
-def build_allurectl_cmd(testbed_data, metadata, launch_name, token):
+def build_allurectl_cmd(testbed_data, metadata, sonic_version, ci_build_number, token):
+    launch_name = generate_launch_name(metadata, sonic_version)
+    launch_tags = generate_launch_tags(testbed_data, metadata, ci_build_number)
     data = testbed_data["testops"]
     cmd = "/opt/allurectl upload "
     cmd += "--endpoint {} ".format(data['endpoint'])
     cmd += "--token {} ".format(token)
     cmd += "--project-id {} ".format(data['project_id'])
     cmd += "--launch-name {} ".format(launch_name)
-    testbed_name = testbed_data["name"]
-    if metadata:
-        # setup_name = metadata["spec"]["usecase"]
-        # launch_tag = f"{testbed_name}_{setup_name}"  # => vsTestbed-01-t0_<setup_name>
-        launch_tag = f"{testbed_name}_default-img"
-        cmd += "--launch-tags {} ".format(launch_tag)
-    else:
-        cmd += "--launch-tags {}_outside_img ".format(testbed_name)
+    cmd += ' '.join([" --launch-tags {} ".format(x) for x in launch_tags if x])
 
     cmd += FULL_REPORT_DIR_PATH
 
@@ -112,12 +178,14 @@ def build_allurectl_cmd(testbed_data, metadata, launch_name, token):
 def main(argv):
     example_text = '''Example:
     ./hedgehog_test_runner.py --testbed hedgehog/env/vsTestbed-01-t0.yaml --report_dir_name vs_test --print True 
-    --launch_name [73]202205_dev.173-0e4b738fd --allurectl_token <token> '''
+    --allurectl_token <token> '''
     parser = argparse.ArgumentParser(epilog=example_text)
     parser.add_argument("--testbed", help="testbed config file", required=True)
     parser.add_argument("--report_dir_name", help="report directory name", required=True)
-    parser.add_argument("--launch_name", help="launch_name [test build]<version>.<build>-<commit_id>", required=True)
     parser.add_argument("--allurectl_token", help="token for allurectl", required=True)
+    parser.add_argument("--ci_build_number", help="CI build number, in case it is running by CI, "
+                                                  "otherwise this parameter can be skipped",
+                        default="manual", required=False)
     parser.add_argument("--print", help="print pytest cmd only", default=False, required=False, type=bool,
                         choices=[True, False])
     args = parser.parse_args()
@@ -125,14 +193,17 @@ def main(argv):
 
     testbed = read_yaml(args.testbed)
     metadata = read_metadata(testbed)
+    sonic_ver = read_sonic_version(testbed)
 
-    # run tests
+    # generate cmd to run test
     tests_to_run = generate_test_list(testbed, metadata)
     test_run_cmd = build_run_test_cmd(testbed, tests_to_run, args.report_dir_name)
+
+    # run tests
     run_cmd(test_run_cmd, is_print_only)
 
-    # uplaod result into testops via `allurectl`
-    allurectl_upload_cmd = build_allurectl_cmd(testbed, metadata, args.launch_name, args.allurectl_token)
+    # upload result into testops via `allurectl`
+    allurectl_upload_cmd = build_allurectl_cmd(testbed, metadata, sonic_ver, args.ci_build_number, args.allurectl_token)
     run_cmd(allurectl_upload_cmd, is_print_only)
 
 
