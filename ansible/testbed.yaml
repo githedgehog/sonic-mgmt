@@ -210,3 +210,18 @@
   inv_name: lab
   auto_recover: 'False'
   comment: Hedgehog T0 topology VMAccel Testbed 01
+
+- conf-name: 01-t1
+  group-name: vms1-t0
+  topo: t1
+  ptf_image_name: docker-ptf
+  ptf: ptf_vms1-t0
+  ptf_ip: 10.250.128.196/16
+  ptf_ipv6:
+  server: server_1
+  vm_base: VM0100
+  dut:
+    - dut_cls_dx010-01
+  inv_name: lab
+  auto_recover: 'False'
+  comment: Hedgehog T1 topology VMAccel Testbed 01
