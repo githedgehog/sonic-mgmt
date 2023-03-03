@@ -35,7 +35,7 @@ redeployEnv() {
     fi
 
     echo "Deploy topology"
-    ssh $SSH_OPTIONS $SERVER "cd $SONIC_MGMT_WD && git stash; git checkout $BRANCH; git pull"
+    ssh $SSH_OPTIONS $SERVER "cd $SONIC_MGMT_WD && git stash; git fetch; git checkout $BRANCH; git pull"
     ssh $SSH_OPTIONS $SERVER "cd $SONIC_MGMT_WD/ansible && ./hedgehog_deployment_script.sh"
 
     DUT_USER=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/ansible/group_vars/lab/secrets.yml | yq .sonicadmin_user"`
