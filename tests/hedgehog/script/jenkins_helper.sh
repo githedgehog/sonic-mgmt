@@ -8,7 +8,7 @@ SONIC_IMG=''
 ALLURE_TOKEN=''
 
 OPTIND=1
-while getopts ':b:s:t:r:i:a:' flag; do
+while getopts ':b:s:t:r:i:a:n:' flag; do
   case "${flag}" in
     b) BRANCH="${OPTARG}" ;;
     s) SERVER="${OPTARG}" ;;
@@ -16,6 +16,7 @@ while getopts ':b:s:t:r:i:a:' flag; do
     r) REPORT_DIR="${OPTARG}" ;;
     i) SONIC_IMG="${OPTARG}" ;;
     a) ALLURE_TOKEN="${OPTARG}" ;;
+    n) CI_BUILD_NUMBER="${OPTARG}" ;;
   esac
 done
 
@@ -58,12 +59,9 @@ runTests() {
     DUT_USER=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/ansible/group_vars/lab/secrets.yml | yq .sonicadmin_user"`
     DUT_PASS=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/ansible/group_vars/lab/secrets.yml | yq .sonicadmin_password"`
 
-    launch_name=`sshpass -p $DUT_PASS ssh $SSH_OPTIONS -o "ProxyCommand ssh $SSH_OPTIONS $SERVER -W %h:%p" $DUT_USER@$DUT_IP "show version" | grep -oP '(?<=SONiC Software Version: SONiC\.).*'`
-    echo $launch_name
-
     echo "Run test cases"
     ssh $SSH_OPTIONS $SERVER "docker exec -t $MGMT_CONTAINER bash -c \"cd /data/sonic-mgmt/tests && python3.8 hedgehog_test_runner.py \
-                --testbed $TESTBED --report_dir_name $REPORT_DIR --launch_name $launch_name --allurectl_token $ALLURE_TOKEN \" "
+                --testbed $TESTBED --report_dir_name $REPORT_DIR --ci_build_number $CI_BUILD_NUMBER --allurectl_token $ALLURE_TOKEN \" "
 }
 
 copyArtifacts() {
