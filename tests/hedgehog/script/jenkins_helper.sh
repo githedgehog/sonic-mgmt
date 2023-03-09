@@ -26,7 +26,7 @@ SSH_OPTIONS="-o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownH
 MGMT_CONTAINER=`ssh -q $SSH_OPTIONS $SERVER "docker ps -f ancestor=docker-sonic-mgmt-hedgehog:master --format {{.Names}}"`
 REPORT_PREFIX=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/tests/$TESTBED | yq .testbed.report_base_dir"`
 DUT_IP=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/tests/$TESTBED | yq .testbed.dut_ip"`
-REPORT_DIR="$(date +%Y%m%d)-$REPORT_DIR"
+REPORT_DIR="$(date +%Y%m%d)-$REPORT_DIR-b$CI_BUILD_NUMBER"
 
 
 redeployEnv() {
