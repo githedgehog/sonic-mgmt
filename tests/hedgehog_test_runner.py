@@ -4,8 +4,12 @@ import sys
 
 import paramiko
 import yaml
+import json
+
+from pathlib import Path
 
 FULL_REPORT_DIR_PATH = ""
+MAPPING_TEST_TO_GROUP_FILE = "./hedgehog/mapping_test_to_group.yaml"
 
 
 def read_yaml(path):
@@ -14,6 +18,13 @@ def read_yaml(path):
             return yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
+
+def read_json(path):
+    with open(path, "r") as stream:
+        try:
+            return json.load(stream)
+        except json.JSONDecodeError as exc:
+            print(exc.msg)
 
 
 def run_cmd_on_dut(testbed_data, cmd):
@@ -147,6 +158,29 @@ def build_run_test_cmd(testbed_data, test_list, report_dir_name):
     return cmd
 
 
+def update_allure_report():
+    tests_to_grup_map = read_yaml(MAPPING_TEST_TO_GROUP_FILE)
+
+    # iterate over files with test results in the Allure directory
+    files = Path(FULL_REPORT_DIR_PATH).glob('*result.json')
+    for file in files:
+        test_info = read_json(file)
+        layer_label = {"name" : "layer"}
+
+        # Find layer label for test in test_to_group.yaml file
+        # If test doesn't find, layer label will be set to "Default" value
+        if test_info["fullName"] in tests_to_grup_map:
+            layer_label["value"] = tests_to_grup_map[test_info["fullName"]]
+        else:
+            layer_label["value"] ="Default"
+
+        test_info["labels"].append(layer_label)
+
+        #rewrite updated JSON
+        with open(file, "w") as outfile:
+            json.dump(test_info, outfile)
+
+
 def run_cmd(cmd, print_only):
     if print_only:
         print(cmd)
@@ -172,7 +206,7 @@ def build_allurectl_cmd(testbed_data, metadata, sonic_version, ci_build_number, 
 
 def main(argv):
     example_text = '''Example:
-    ./hedgehog_test_runner.py --testbed hedgehog/env/vsTestbed-01-t0.yaml --report_dir_name vs_test --print True 
+    ./hedgehog_test_runner.py --testbed hedgehog/env/vsTestbed-01-t0.yaml --report_dir_name vs_test --print True
     --allurectl_token <token> '''
     parser = argparse.ArgumentParser(epilog=example_text)
     parser.add_argument("--testbed", help="testbed config file", required=True)
@@ -196,6 +230,9 @@ def main(argv):
 
     # run tests
     run_cmd(test_run_cmd, is_print_only)
+
+    # extend allure report with new labels
+    update_allure_report()
 
     # upload result into testops via `allurectl`
     allurectl_upload_cmd = build_allurectl_cmd(testbed, metadata, sonic_ver, args.ci_build_number, args.allurectl_token)
