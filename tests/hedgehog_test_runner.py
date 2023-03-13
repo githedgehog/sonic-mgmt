@@ -66,7 +66,7 @@ def generate_test_list(testbed_data, metadata):
     # remove tests in case feature is disabled
     # by default all available test are going to be run, otherwise explicitly delete
     if metadata:
-        metadata_config = metadata['Configuration']
+        metadata_config = metadata['configuration']
         if metadata_config['INCLUDE_SNMP'] == 'n':
             test_dictionary.pop('snmp', None)
             test_dictionary.pop('cacl', None)
@@ -91,15 +91,12 @@ def generate_launch_name(metadata, sonic_ver):
     # todo(adovhan) 'sonic_mgmt_name': need to understand where test is running(sonic-mgmt/keysight)
     sonic_mgmt_name = "sonic-mgmt.{}".format(sonic_mgmt_commit_id)
     if metadata:
-        # todo uncomment and remove hardcoded '202205' once it is added in metadata
-        # launch_name += "{}".format(metadata['channel'])
-        launch_name += "202205"
+        launch_name += "{}".format(metadata['channel'])
         # launch_name += "-{}".format(metadata['hedgehog_version'])
-        # todo update -> ['spec']['platform'], once new build_metadata is introduced
-        launch_name += "-{}".format(metadata['Version']['Platform'])
-        launch_name += "-{}".format(metadata['Version']['SONiC_Software_Version'])  # todo update -> ['version']['SONiC.
+        launch_name += "-{}".format(metadata['spec']['platform'])
+        launch_name += "-{}".format(metadata['version']['SONiC_Software_Version'])
         launch_name += "-{}".format(sonic_mgmt_name)
-        # launch_name += "-{}".format(metadata['id'])
+        launch_name += "-{}".format(metadata['id'])
     else:
         launch_name += "{}".format(sonic_ver['release'])
         launch_name += "-{}".format(sonic_ver['asic_type'])
@@ -112,11 +109,9 @@ def generate_launch_name(metadata, sonic_ver):
 
 def generate_launch_tags(testbed, metadata, ci_build_number):
     tags = []
-    # todo uncomment once it is added in metadata
     if metadata:
-        # tags.append("build-{}".format(metadata['id']))
-        # tags.append("usecase-{}".format(metadata['spec']['usecase']))
-        pass
+        tags.append("build-{}".format(metadata['id']))
+        tags.append("usecase-{}".format(metadata['spec']['usecase']))
 
     # todo(adovhan) 'sonic_mgmt_name': need to understand where test is running(sonic-mgmt/keysight)
     sonic_mgmt_commit_id = run_cmd("git rev-parse --short HEAD", False).stdout.strip()
