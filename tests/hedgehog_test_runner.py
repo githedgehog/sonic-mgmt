@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 FULL_REPORT_DIR_PATH = ""
-MAPPING_TEST_TO_GROUP_FILE = "./mapping_test_to_group.yaml"
+MAPPING_TEST_TO_GROUP_FILE = "./hedgehog/mapping_test_to_group.yaml"
 
 
 def read_yaml(path):
