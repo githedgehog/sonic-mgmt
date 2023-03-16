@@ -44,7 +44,7 @@ def setup(duthosts, rand_one_dut_hostname):
         data = duthost.shell("cat {}".format(path_to_metadata))['stdout']
         metadata = yaml.safe_load(data)
 
-        config = metadata['Configuration']
+        config = metadata['configuration']
         setup_info['config'] = config
     else:
         setup_info['config'] = False
