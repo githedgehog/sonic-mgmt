@@ -3,18 +3,27 @@ import os
 import shutil
 import sys
 import uuid
+import yaml
 
 import boto3
 import requests
 
-BUCKET_NAME = "test" #todo, change in code
+METADATA_FILENAME = "build_metadata.yaml"
 
 
-def rename_directory(path_with_target):
+def read_yaml(path):
+    with open(path, "r") as stream:
+        try:
+            return yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+
+
+def rename_directory(path_with_target, build_id):
     # mv old_name -> new_name_uuid4
     parent_dir = os.path.dirname(path_with_target)
     dir_to_rename = os.path.basename(path_with_target)
-    new_dir_name = str(uuid.uuid4())
+    new_dir_name = build_id
     os.chdir(parent_dir)
     os.rename(dir_to_rename, new_dir_name)
     return new_dir_name
@@ -22,16 +31,15 @@ def rename_directory(path_with_target):
 
 def create_metadata_symlink(path):
     # find build_metadata.yaml file
-    name = "build_metadata.yaml"
     os.chdir(path)
     metadata_path = ""
     current_dir = "."
     for root, dirs, files in os.walk(current_dir):
-        if name in files:
-            metadata_path = os.path.join(root, name)
+        if METADATA_FILENAME in files:
+            metadata_path = os.path.join(root, METADATA_FILENAME)
 
     # create symlink, to avoid copying
-    os.symlink(metadata_path, name)
+    os.symlink(metadata_path, METADATA_FILENAME)
 
 
 def create_and_move_dir(parent_dir, dir_to_move):
@@ -54,39 +62,46 @@ def gen_file_path_to_publish(parent_dir, dirname):
     return files_to_publish
 
 
-def publish_file(parent_dir, files, access_key, secret_key):
+def publish_file(parent_dir, files, access_key, secret_key, account_id, bucket_name):
     os.chdir(parent_dir)
-    s3_client = boto3.client('s3', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    s3_client = boto3.client('s3', aws_access_key_id=access_key, aws_secret_access_key=secret_key,
+                             endpoint_url=f"https://{account_id}.r2.cloudflarestorage.com")
 
     for file in files:
         with open(file, "rb") as f:
-            s3_client.upload_fileobj(f, "BUCKET_NAME", "OBJECT_NAME")
+            s3_client.upload_fileobj(f, bucket_name, f.name)
 
 
 def notify_factory_api(uuid4):
-    # res = requests.get("https://factory.githedgehog.com/api/webhook/build/".format(uuid4))
+    # res = requests.post(f"https://factory.githedgehog.com/api/webhook/build/{uuid4}")
     # assert res.status_code == 200
     pass
 
 
 def main(argv):
     example_text = '''Example:
-    ./publish_img_artifacts.py --path_to_artifact_dir <path>/target --aws_access_key xxx --aws_secret_key xxx'''
+    ./publish_img_artifacts.py --path_to_artifact_dir <path>/target --aws_access_key xxx --aws_secret_key xxx
+        --account_id xxx --bucket_name hedgehog-downloads'''
     parser = argparse.ArgumentParser(epilog=example_text)
-    parser.add_argument("--path_to_artifact_dir", help="path to artifacts", required=True)
-    parser.add_argument("--aws_access_key", help="access key", required=True)
-    parser.add_argument("--aws_secret_key", help="secret key", required=True)
+    parser.add_argument("--path_to_artifact_dir", help="Full path to artifacts", required=True)
+    parser.add_argument("--aws_access_key", help="Access Key ID", required=True)
+    parser.add_argument("--aws_secret_key", help="Secret Access Key", required=True)
+    parser.add_argument("--account_id", help="Account ID", required=True)
+    parser.add_argument("--bucket_name", help="Bucket name", required=True)
 
     args = parser.parse_args()
 
     path_with_target = args.path_to_artifact_dir
-    parent_dir = os.path.dirname(args.path_to_artifact_dir)
+    parent_dir = os.path.dirname(path_with_target)
 
     # create symlink for build_metadata
-    create_metadata_symlink("", path_with_target)
+    create_metadata_symlink(path_with_target)
+
+    # read build metadata
+    metadata = read_yaml(METADATA_FILENAME)
 
     # rename target -> to uuid4
-    new_target_dir_name = rename_directory(path_with_target)
+    new_target_dir_name = rename_directory(path_with_target, metadata['id'])
 
     # create dir structure according requirements sonic/<uuid4/
     root_dir = create_and_move_dir(parent_dir, new_target_dir_name)
@@ -95,7 +110,7 @@ def main(argv):
     files_to_publish = gen_file_path_to_publish(parent_dir, root_dir)
 
     # publish artifacts
-    publish_file(parent_dir, files_to_publish, args.aws_access_key, args.aws_secret_key)
+    publish_file(parent_dir, files_to_publish, args.aws_access_key, args.aws_secret_key, args.account_id, args.bucket_name)
 
     # notify
     notify_factory_api(new_target_dir_name)
