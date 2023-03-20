@@ -1,3 +1,4 @@
+import allure
 import json
 import logging
 import re
@@ -66,162 +67,172 @@ def test_container_state(setup, name):
         INCLUDE_SNMP: y -> container is running.
         In case, no build_metadata.yaml, then all containers are running"""
 
+
     config = setup['config']
     if config is False:
         pytest.skip("SKIP: no build_metadata.yaml file. Cannot check expected state.")
 
-    expected_state = True if config[sonic_ctrs[name]['build_flag']] == "y" else False
-    actual_state = sonic_ctrs[name]['status']
-    pytest_assert(actual_state == expected_state,
-                  "{} actual state: {}, but expected: {}".format(name, actual_state, expected_state))
+    with allure.step('When: Read build_metadata.yaml file from DUT and get expected state of container'):
+        expected_state = True if config[sonic_ctrs[name]['build_flag']] == "y" else False
+    with allure.step('Then: Actual state is the same as expected'):
+        actual_state = sonic_ctrs[name]['status']
+        pytest_assert(actual_state == expected_state,
+                      "{} actual state: {}, but expected: {}".format(name, actual_state, expected_state))
 
 
 def test_bgp_smoke(setup):
     """Verify that 'bgdp' process is running according to INCLUDE_FRR_BGP (build_metadata.yaml).
         If so, make basic BGP configuration and verify that configuration is applied"""
 
-    # setup, get init bgp conf
-    duthost = setup['duthost']
-    config = setup['config']
-    is_bgpd_proc = is_process_running(duthost, "bgpd")
+    with allure.step('Setup: Get DUT host and init bgp conf'):
+        duthost = setup['duthost']
+        config = setup['config']
+        is_bgpd_proc = is_process_running(duthost, "bgpd")
 
-    # check process
-    if config and config['INCLUDE_FRR_BGP'] == 'n':
-        pytest_assert(not is_bgpd_proc, "There is running 'bgpd' process, but shouldn't be.")
-    # note: bgp is running in community by default ('not config' means community)
-    elif not config or (config and config['INCLUDE_FRR_BGP'] == 'y'):
-        # setup: get init bgp conf, prepare command for restore init config
-        init_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
-        cmd_to_restore = ["vtysh -c \"configure terminal\"", "-c \"no router bgp\""]
-        [cmd_to_restore.append("-c \"{}\"".format(init_bgp_conf[i])) for i in range(len(init_bgp_conf))]
-        try:
-            # remove current bgp conf
-            duthost.command("vtysh -c \"configure terminal\" \
-                                       -c \"no router bgp\"", module_ignore_errors=True)
+    with allure.step('And: Verify BGP process according to metadata from dut, '
+                     'go to the next verification if feature is running. Otherwise exit.'):
+        if config and config['INCLUDE_FRR_BGP'] == 'n':
+            pytest_assert(not is_bgpd_proc, "There is running 'bgpd' process, but shouldn't be.")
+        # note: bgp is running in community by default ('not config' means community)
+        elif not config or (config and config['INCLUDE_FRR_BGP'] == 'y'):
+            # setup: get init bgp conf, prepare command for restore init config
+            init_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
+            cmd_to_restore = ["vtysh -c \"configure terminal\"", "-c \"no router bgp\""]
+            [cmd_to_restore.append("-c \"{}\"".format(init_bgp_conf[i])) for i in range(len(init_bgp_conf))]
+            try:
+                with allure.step('When: Remove current bgp conf'):
+                    duthost.command("vtysh -c \"configure terminal\" \
+                                               -c \"no router bgp\"", module_ignore_errors=True)
 
-            # configure bgp router and neighbor
-            dut_asn = 1234
-            neighbor_asn = 4321
-            neighbor_ip = '1.1.1.1'
-            duthost.command("vtysh -c \"configure terminal\" \
-                                    -c \"router bgp {dut_asn}\" \
-                                    -c \"neighbor PEER_V4 peer-group\" \
-                                    -c \"neighbor {neighbor_ip} remote-as {neighbor_asn}\" \
-                                    -c \"neighbor {neighbor_ip} peer-group PEER_V4\"".format(dut_asn=dut_asn,
-                                                                                             neighbor_asn=neighbor_asn,
-                                                                                             neighbor_ip=neighbor_ip))
+                with allure.step('And: Configure bgp router and neighbor'):
+                    dut_asn = 1234
+                    neighbor_asn = 4321
+                    neighbor_ip = '1.1.1.1'
+                    duthost.command("vtysh -c \"configure terminal\" \
+                                            -c \"router bgp {dut_asn}\" \
+                                            -c \"neighbor PEER_V4 peer-group\" \
+                                            -c \"neighbor {neighbor_ip} remote-as {neighbor_asn}\" \
+                                            -c \"neighbor {neighbor_ip} peer-group PEER_V4\"".format(dut_asn=dut_asn,
+                                                                                                     neighbor_asn=neighbor_asn,
+                                                                                                     neighbor_ip=neighbor_ip))
 
-            # verify that new bgp conf is really applied
-            result = duthost.command('vtysh -c \"show bgp summary json\"')['stdout']
-            result_json = json.loads(result)['ipv4Unicast']
+                with allure.step('Then: Verify that new BGP conf is really applied'):
+                    result = duthost.command('vtysh -c \"show bgp summary json\"')['stdout']
+                    result_json = json.loads(result)['ipv4Unicast']
 
-            pytest_assert(result_json['as'] == dut_asn, "dut asn is not applied")
-            pytest_assert(result_json['peers'][neighbor_ip]['remoteAs'] == neighbor_asn,
-                          "Neighbor configuration is not applied")
-        finally:
-            # restore bgp configuration
-            duthost.command(' '.join(cmd_to_restore))
+                    pytest_assert(result_json['as'] == dut_asn, "dut asn is not applied")
+                    pytest_assert(result_json['peers'][neighbor_ip]['remoteAs'] == neighbor_asn,
+                                  "Neighbor configuration is not applied")
+            finally:
+                with allure.step('Cleanup: Restore init BGP configuration'):
+                    duthost.command(' '.join(cmd_to_restore))
 
-            # wait some time to establish bgp session with neighbor if any
-            time.sleep(20)
+                    # wait some time to establish bgp session with neighbor if any
+                    time.sleep(20)
 
-            # compare restored configuration with init
-            restore_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
-            pytest_assert(init_bgp_conf == restore_bgp_conf, "bgp configuration is not same as init bgp configuration")
+                    # compare restored configuration with init
+                    restore_bgp_conf = duthost.command('vtysh -c \"show running-config bgpd no-header\"')['stdout'].split('\n')
+                    pytest_assert(init_bgp_conf == restore_bgp_conf, "bgp configuration is not same as init bgp configuration")
 
 
 def test_bfd_smoke(setup):
     """Verify that 'bfdd' process is running according to INCLUDE_FRR_BFD (build_metadata.yaml).
         If so, make basic BFD configuration and verify that configuration is applied"""
 
-    duthost = setup['duthost']
-    config = setup['config']
-    is_bfdd_proc = is_process_running(duthost, "bfdd")
+    with allure.step('Setup: Get DUT host'):
+        duthost = setup['duthost']
+        config = setup['config']
+        is_bfdd_proc = is_process_running(duthost, "bfdd")
 
-    # check process
-    if not config:
-        pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, bfdd is not running by default.")
-    elif not sonic_ctrs['bgp']['status']:
-        pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
-    elif config and config['INCLUDE_FRR_BFD'] == 'n':
-        pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
-    elif config and config['INCLUDE_FRR_BFD'] == 'y':
-        bfd_profile = "test_profile"
-        receive_interval = 111
-        peer_ip = "1.1.1.1"
-        try:
-            # verify bfdd process
-            pytest_assert(is_bfdd_proc, "There is no running bfdd process, but should be.")
+    with allure.step('And: Verify BFD process according to metadata from DUT, '
+                     'go to the next verification if feature is running. Otherwise exit.'):
+        if not config:
+            pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, bfdd is not running by default.")
+        elif not sonic_ctrs['bgp']['status']:
+            pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
+        elif config and config['INCLUDE_FRR_BFD'] == 'n':
+            pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
+        elif config and config['INCLUDE_FRR_BFD'] == 'y':
+            bfd_profile = "test_profile"
+            receive_interval = 111
+            peer_ip = "1.1.1.1"
+            try:
+                with allure.step('When: Feature is enabled. Verify "bfdd" process.'):
+                    pytest_assert(is_bfdd_proc, "There is no running bfdd process, but should be.")
 
-            # configure test profile and peer
-            duthost.command("vtysh -c \"configure terminal\" \
-                                    -c \"bfd\" \
-                                    -c \"profile {bfd_profile}\" \
-                                    -c \"receive-interval {receive_interval}\" \
-                                    -c \"no shutdown\" \
-                                    -c \"exit\" \
-                                    -c \"peer {peer_ip}\" \
-                                    -c \"profile {bfd_profile}\"".format(bfd_profile=bfd_profile,
-                                                                         receive_interval=receive_interval,
-                                                                         peer_ip=peer_ip))
+                with allure.step('When: Configure BFD (test profile and peer).'):
+                    duthost.command("vtysh -c \"configure terminal\" \
+                                            -c \"bfd\" \
+                                            -c \"profile {bfd_profile}\" \
+                                            -c \"receive-interval {receive_interval}\" \
+                                            -c \"no shutdown\" \
+                                            -c \"exit\" \
+                                            -c \"peer {peer_ip}\" \
+                                            -c \"profile {bfd_profile}\"".format(bfd_profile=bfd_profile,
+                                                                                 receive_interval=receive_interval,
+                                                                                 peer_ip=peer_ip))
 
-            # verify bfd config is really applied
-            result = duthost.command("vtysh -c \"show bfd peer {} json\"".format(peer_ip))['stdout']
-            result_json = json.loads(result)
-            pytest_assert(result_json['peer'] == peer_ip, "Peer: '{}' is missed".format(peer_ip))
-            pytest_assert(result_json['receive-interval'] == receive_interval,
-                          "Receive-interval is not the same as in profile")
-        finally:
-            # cleanup: remove test bfd profile
-            duthost.command("vtysh -c \"configure terminal\" \
-                                    -c \"bfd\" \
-                                    -c \"no peer {peer_ip}\" \
-                                    -c \"no profile {bfd_profile}\"".format(bfd_profile=bfd_profile, peer_ip=peer_ip))
+                with allure.step('Then: Verify that BFD conf is really applied'):
+                    result = duthost.command("vtysh -c \"show bfd peer {} json\"".format(peer_ip))['stdout']
+                    result_json = json.loads(result)
+                    pytest_assert(result_json['peer'] == peer_ip, "Peer: '{}' is missed".format(peer_ip))
+                    pytest_assert(result_json['receive-interval'] == receive_interval,
+                                  "Receive-interval is not the same as in profile")
+            finally:
+                with allure.step('Cleanup: Remove test bfd profile.'):
+                    duthost.command("vtysh -c \"configure terminal\" \
+                                            -c \"bfd\" \
+                                            -c \"no peer {peer_ip}\" \
+                                            -c \"no profile {bfd_profile}\"".format(bfd_profile=bfd_profile,
+                                                                                    peer_ip=peer_ip))
 
 
 def test_vrrp_smoke(setup):
     """Verify that 'vrrpd' process is running according to INCLUDE_FRR_VRRP (build_metadata.yaml).
         If so, make basic VRRP configuration and verify that configuration is applied"""
 
-    duthost = setup['duthost']
-    config = setup['config']
-    is_vrrpd_proc = is_process_running(duthost, "vrrpd")
+    with allure.step('Setup: Get DUT host'):
+        duthost = setup['duthost']
+        config = setup['config']
+        is_vrrpd_proc = is_process_running(duthost, "vrrpd")
 
-    # check process
-    if not config:
-        pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, 'vrrpd' is not running by default.")
-    elif config and config['INCLUDE_FRR_VRRP'] == 'n':
-        pytest_assert(not is_vrrpd_proc, "There is running 'vrrpd' process, but shouldn't be.")
-    elif config and config['INCLUDE_FRR_VRRP'] == 'y':
-        interface = "lo"
-        vrid = 111
-        version = 2
-        priority = 22
-        try:
-            # verify vrrp process
-            pytest_assert(is_vrrpd_proc, "There is no running vrrpd process, but should be.")
+    with allure.step('And: Verify VRRP process according to metadata from DUT, '
+                     'go to the next verification if feature is running. Otherwise exit.'):
+        if not config:
+            pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, 'vrrpd' is not running by default.")
+        elif config and config['INCLUDE_FRR_VRRP'] == 'n':
+            pytest_assert(not is_vrrpd_proc, "There is running 'vrrpd' process, but shouldn't be.")
+        elif config and config['INCLUDE_FRR_VRRP'] == 'y':
+            interface = "lo"
+            vrid = 111
+            version = 2
+            priority = 22
+            try:
+                with allure.step('When: Feature is enabled. Verify "vrrpd" process.'):
+                    pytest_assert(is_vrrpd_proc, "There is no running vrrpd process, but should be.")
 
-            # configure vrrp version/priority for interface
-            duthost.command("vtysh -c \"configure terminal\" \
-                                    -c \"interface {interface}\" \
-                                    -c \"vrrp {vrid} version {version}\" \
-                                    -c \"vrrp {vrid} priority {priority}\"".format(interface=interface, vrid=vrid,
-                                                                                   version=version, priority=priority))
+                with allure.step('When: Configure VRRP version/priority for interface'):
+                    duthost.command("vtysh -c \"configure terminal\" \
+                                            -c \"interface {interface}\" \
+                                            -c \"vrrp {vrid} version {version}\" \
+                                            -c \"vrrp {vrid} priority {priority}\"".format(interface=interface,
+                                                                                           vrid=vrid, version=version,
+                                                                                           priority=priority))
 
-            # verify vrrp config is applied
-            result = duthost.command("vtysh -c \"show vrrp json\"")['stdout']
-            result_json = json.loads(result)[0]  # json inside array
-            pytest_assert(result_json['vrid'] == vrid,
-                          "VRID is not matched, expected: '{}', actual: '{}'".format(vrid, result_json['vrid']))
-            pytest_assert(result_json['version'] == version,
-                          "VRRP version is not matched, expected: '{}', actual: '{}'".format(version,
-                                                                                             result_json['version']))
-            pytest_assert(result_json['interface'] == interface,
-                          "Interface is not matched, expected: '{}', actual: '{}'".format(interface,
-                                                                                          result_json['interface']))
-        finally:
-            # cleanup: remove test bfd profile
-            duthost.command("vtysh -c \"configure terminal\" \
+                with allure.step('Then: Verify VRRP config is applied'):
+                    result = duthost.command("vtysh -c \"show vrrp json\"")['stdout']
+                    result_json = json.loads(result)[0]  # json inside array
+                    pytest_assert(result_json['vrid'] == vrid,
+                                  "VRID is not matched, expected: '{}', actual: '{}'".format(vrid, result_json['vrid']))
+                    pytest_assert(result_json['version'] == version,
+                                  "VRRP version is not matched, expected: '{}', actual: '{}'".format(version,
+                                                                                                     result_json['version']))
+                    pytest_assert(result_json['interface'] == interface,
+                                  "Interface is not matched, expected: '{}', actual: '{}'".format(interface,
+                                                                                                  result_json['interface']))
+            finally:
+                with allure.step('Cleanup: Remove VRRP config.'):
+                    duthost.command("vtysh -c \"configure terminal\" \
                                                 -c \"interface {interface}\" \
                                                 -c \"no vrrp {vrid} priority {priority}\" \
                                                 -c \"no vrrp {vrid} version {version}\"".format(interface=interface,
@@ -234,30 +245,33 @@ def test_syslog_smoke(setup):
     """Verify that 'rsyslogd' process is running according to INCLUDE_SYSLOG (build_metadata.yaml).
         If so, make basic syslog configuration and verify that configuration is applied"""
 
-    # setup, get init bgp conf
-    duthost = setup['duthost']
-    config = setup['config']
-    is_rsyslogd_proc = is_process_running(duthost, "rsyslogd")
+    with allure.step('Setup: Get DUT host'):
+        duthost = setup['duthost']
+        config = setup['config']
+        is_rsyslogd_proc = is_process_running(duthost, "rsyslogd")
 
-    # check process
-    if config and config['INCLUDE_SYSLOG'] == 'n':
-        pytest_assert(not is_rsyslogd_proc, "There is running 'rsyslogd' process, but shouldn't be.")
-    # note: syslog is running in community by default ('not config' means community)
-    elif not config or (config and config['INCLUDE_SYSLOG'] == 'y'):
-        # setup
-        fake_syslog_server_ip = "1.1.1.1"
-        try:
-            # verify rsyslogd process
-            pytest_assert(is_rsyslogd_proc, "There is no running 'rsyslogd' process, but should be.")
-            # add fake syslog ip server verify it is added
-            duthost.shell("sudo config syslog add {}".format(fake_syslog_server_ip), module_ignore_errors=True)
-            syslog_servers = duthost.shell("show runningconfiguration syslog", module_ignore_errors=True)
-            all_ips = re.findall(r'\[([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\]', syslog_servers['stdout'])
-            pytest_assert(fake_syslog_server_ip in all_ips,
-                          "Syslog server ip is not applied, available ips: {}".format(all_ips))
-        finally:
-            # cleanup:
-            duthost.shell("sudo config syslog del {}".format(fake_syslog_server_ip), module_ignore_errors=True)
+    with allure.step('And: Get RSYSLOG feature from metadata.'):
+        if config and config['INCLUDE_SYSLOG'] == 'n':
+            with allure.step('When: Feature is disabled. '
+                             'Then: Verify "rsyslogd" process is not running.'):
+                pytest_assert(not is_rsyslogd_proc, "There is running 'rsyslogd' process, but shouldn't be.")
+        # note: syslog is running in community by default ('not config' means community)
+        elif not config or (config and config['INCLUDE_SYSLOG'] == 'y'):
+            # setup
+            fake_syslog_server_ip = "1.1.1.1"
+            try:
+                with allure.step('When: Feature is enabled. Then: Verify "rsyslogd" process is running.'):
+                    pytest_assert(is_rsyslogd_proc, "There is no running 'rsyslogd' process, but should be.")
+                with allure.step('When: Add fake syslog ip server.'):
+                    duthost.shell("sudo config syslog add {}".format(fake_syslog_server_ip), module_ignore_errors=True)
+                with allure.step('Then: Verify that new syslog server is added.'):
+                    syslog_servers = duthost.shell("show runningconfiguration syslog", module_ignore_errors=True)
+                    all_ips = re.findall(r'\[([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\]', syslog_servers['stdout'])
+                    pytest_assert(fake_syslog_server_ip in all_ips,
+                                  "Syslog server ip is not applied, available ips: {}".format(all_ips))
+            finally:
+                with allure.step('Cleanup: Remove syslog conf.'):
+                    duthost.shell("sudo config syslog del {}".format(fake_syslog_server_ip), module_ignore_errors=True)
 
 
 def test_database_smoke(setup):
@@ -265,22 +279,24 @@ def test_database_smoke(setup):
         Check 'docker events' and make sure that container is stable (no restart).
         Check that config_db exist in redis."""
 
-    duthost = setup['duthost']
-    config = setup['config']
-    container = "database"
-    service = "database.service"
-    shell_check_config_db = "redis-cli -n 4 KEYS \"*\""
+    with allure.step('Setup: Get DUT host and metadata is any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        container = "database"
+        service = "database.service"
+        shell_check_config_db = "redis-cli -n 4 KEYS \"*\""
 
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
-    # Check if nat service is active
-    pytest_assert(check_service_alive(duthost, service), "database service {} isn't active".format(service))
+    with allure.step('Verify that "database" service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "database service {} isn't active".format(service))
 
-    # "-n 4" means read from 4th redis namespace (CONFIG_DB)
-    res_check_config_db = run_shell_helper(duthost, shell_check_config_db, "Error while reading redis DB.", do_assert=True)
+    with allure.step('And: Verify that system allow to read data from db.'):
+        # "-n 4" means read from 4th redis namespace (CONFIG_DB)
+        res_check_config_db = run_shell_helper(duthost, shell_check_config_db, "Error while reading redis DB.", do_assert=True)
 
-    logger.info("config DB have {} records.".format(len(res_check_config_db['stdout_lines'])))
+        logger.info("config DB have {} records.".format(len(res_check_config_db['stdout_lines'])))
 
 
 def test_syncd_smoke(setup):
@@ -288,18 +304,20 @@ def test_syncd_smoke(setup):
         Check 'docker events' and make sure that container is stable (no restart).
         Verify that 'syncd' process is running."""
 
-    duthost = setup['duthost']
-    config = setup['config']
-    container = "syncd"
-    service = "syncd.service"
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        container = "syncd"
+        service = "syncd.service"
 
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
-    pytest_assert(is_process_running(duthost, "syncd"), "There is no running syncd process.")
+    with allure.step('Verify that "syncd" process is running.'):
+        pytest_assert(is_process_running(duthost, "syncd"), "There is no running syncd process.")
 
-    # Check if nat service is active
-    pytest_assert(check_service_alive(duthost, service), "syncd service {} isn't active".format(service))
+    with allure.step('Verify that "syncd" service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "syncd service {} isn't active".format(service))
 
 
 def test_swss_smoke(setup):
@@ -307,159 +325,176 @@ def test_swss_smoke(setup):
         Check 'docker events' and make sure that container is stable (no restart).
         Verify that 'orchagent' process is running."""
 
-    duthost = setup['duthost']
-    config = setup['config']
-    container = "swss"
-    service = "swss.service"
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        container = "swss"
+        service = "swss.service"
 
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
-    pytest_assert(is_process_running(duthost, "orchagent"), "There is no running orchagent process.")
+    with allure.step('Verify that "orchagent(swss)" process is running.'):
+        pytest_assert(is_process_running(duthost, "orchagent"), "There is no running orchagent process.")
 
-    # Check if nat service is active
-    pytest_assert(check_service_alive(duthost, service), "swss service {} isn't active".format(service))
+    with allure.step('Verify that "swss" service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "swss service {} isn't active".format(service))
 
 
 def test_pmon_smoke(setup):
     """Verify that 'pmon' container state according to INCLUDE_PMON (build_metadata.yaml).
         Check 'docker events' and make sure that container is stable (no restart)."""
 
-    duthost = setup['duthost']
-    config = setup['config']
-    container = "pmon"
-    service = "pmon.service"
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        container = "pmon"
+        service = "pmon.service"
 
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
-    # Check if nat service is active
-    pytest_assert(check_service_alive(duthost, service), "pmon service {} isn't active".format(service))
+    with allure.step('Verify that "pmon" service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "pmon service {} isn't active".format(service))
 
 
 def test_nat_smoke(setup):
     """Verify that 'nat' feature is running according to INCLUDE_NAT (build_metadata.yaml).
         If so, make basic NAT configuration and verify that configuration is applied"""
-    duthost = setup['duthost']
-    config = setup['config']
-    build_flag = "INCLUDE_NAT"
-    service = "nat.service"
-    shell_show_nat = "show nat"
-    shell_show_nat_state = shell_show_nat + " config globalvalues | grep \"Admin Mode\" | awk '{print $4}'"
-    shell_conf_nat = "sudo config nat"
-    shell_conf_nat_feature = shell_conf_nat + " feature"
 
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        build_flag = "INCLUDE_NAT"
+        service = "nat.service"
+        shell_show_nat = "show nat"
+        shell_show_nat_state = shell_show_nat + " config globalvalues | grep \"Admin Mode\" | awk '{print $4}'"
+        shell_conf_nat = "sudo config nat"
+        shell_conf_nat_feature = shell_conf_nat + " feature"
 
     if config and config[build_flag] == "n":
-        pytest.skip("SKIP. NAT feature is disabled on build.")
+        with allure.step('"NAT" feature is disabled in metadata. Skip this test at this stage.'):
+            pytest.skip("SKIP. NAT feature is disabled on build.")
 
-    # Skip this step. Currently nat.setvice doesn't work
-    # Check if nat service is active
-    # pytest_assert(check_service_alive(duthost, service), "NAT service {} isn't active".format(service))
+    # Skip this step. Currently, nat.service doesn't work
+    # with allure.step('Verify that "NAT" service is active.'):
+    #     pytest_assert(check_service_alive(duthost, service), "NAT service {} isn't active".format(service))
 
-    # Check CLI available
-    run_shell_helper(duthost, shell_show_nat, "CLI \"{}\" command error".format(shell_show_nat), do_assert=True)
-    run_shell_helper(duthost, shell_conf_nat, "CLI \"{}\" command error".format(shell_conf_nat), do_assert=True)
+    with allure.step('Verify that NAT CLI is available and get actual NAT state.'):
+        run_shell_helper(duthost, shell_show_nat, "CLI \"{}\" command error".format(shell_show_nat), do_assert=True)
+        run_shell_helper(duthost, shell_conf_nat, "CLI \"{}\" command error".format(shell_conf_nat), do_assert=True)
 
-    # Get NAT state
-    res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "Fail while getting NAT state", do_assert=True)
-    original_nat_state = res_show_nat_state['stdout']
-    new_nat_state = "enable" if original_nat_state == "disabled" else "disable"
+        # Get NAT state
+        res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "Fail while getting NAT state", do_assert=True)
+        original_nat_state = res_show_nat_state['stdout']
+        new_nat_state = "enable" if original_nat_state == "disabled" else "disable"
 
     try:
-        # Change NAT state and check it
-        run_shell_helper(duthost, shell_conf_nat_feature + " " + new_nat_state)
-        res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "CLI \"{}\" command error".format(shell_show_nat_state), do_assert=True)
-        pytest_assert(new_nat_state + "d" == res_show_nat_state['stdout'], "Error while changing NAT feature state")
+        with allure.step('When: Change actual NAT state.'):
+            run_shell_helper(duthost, shell_conf_nat_feature + " " + new_nat_state)
+        with allure.step('Then: Actual NAT state is changed.'):
+            res_show_nat_state = run_shell_helper(duthost, shell_show_nat_state, "CLI \"{}\" command error".format(shell_show_nat_state), do_assert=True)
+            pytest_assert(new_nat_state + "d" == res_show_nat_state['stdout'], "Error while changing NAT feature state")
     finally:
-        # cleanup
-        run_shell_helper(duthost, shell_conf_nat_feature + " " + original_nat_state.rstrip(original_nat_state[-1]),
-                        "Cleanup: error while NAT state ({}) to the original ({})".format(new_nat_state, original_nat_state), do_assert=True)
+        with allure.step('Cleanup: Revert NAT state to original.'):
+            run_shell_helper(duthost, shell_conf_nat_feature + " " + original_nat_state.rstrip(original_nat_state[-1]),
+                            "Cleanup: error while NAT state ({}) to the original ({})".format(new_nat_state, original_nat_state), do_assert=True)
 
 
 def test_radius_smoke(setup):
     """Verify that 'radius' feature is running according to INCLUDE_RADIUS (build_metadata.yaml).
         If so, make basic RADIUS configuration and verify that configuration is applied"""
-    duthost = setup['duthost']
-    config = setup['config']
-    build_flag = "INCLUDE_RADIUS"
-    deb_packets = ["libnss-radius", "libpam-radius-auth"]
-    shell_show_radius = "show radius"
-    shell_show_radius_server = shell_show_radius + " | grep \"RADIUS_SERVER\" | awk '{print $3}'"
-    fake_server_ip = "1.1.1.1"
-    shell_conf_radius = "sudo config radius"
-    shell_conf_radius_add = shell_conf_radius + " add " + fake_server_ip
-    shell_conf_radius_del = shell_conf_radius + " delete " + fake_server_ip
+
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        build_flag = "INCLUDE_RADIUS"
+        deb_packets = ["libnss-radius", "libpam-radius-auth"]
+        shell_show_radius = "show radius"
+        shell_show_radius_server = shell_show_radius + " | grep \"RADIUS_SERVER\" | awk '{print $3}'"
+        fake_server_ip = "1.1.1.1"
+        shell_conf_radius = "sudo config radius"
+        shell_conf_radius_add = shell_conf_radius + " add " + fake_server_ip
+        shell_conf_radius_del = shell_conf_radius + " delete " + fake_server_ip
 
     if config and config[build_flag] == "n":
-        pytest.skip("SKIP. Radius feature is disabled on build.")
+        with allure.step('"RADIUS" feature is disabled. Skip this test at this stage.'):
+            pytest.skip("SKIP. Radius feature is disabled on build.")
 
-    # Check if deb packets installed
-    check_installed_package_helper(duthost, deb_packets)
+    with allure.step('Verify that RADIUS related deb packages are installed'):
+        check_installed_package_helper(duthost, deb_packets)
 
-    # Check CLI available
-    run_shell_helper(duthost, shell_show_radius, "CLI \"{}\" command error".format(shell_show_radius), do_assert=True)
-    run_shell_helper(duthost, shell_conf_radius, "CLI \"{}\" command error".format(shell_conf_radius), do_assert=True)
+    with allure.step('Verify that RADIUS CLI is available.'):
+        run_shell_helper(duthost, shell_show_radius, "CLI \"{}\" command error".format(shell_show_radius), do_assert=True)
+        run_shell_helper(duthost, shell_conf_radius, "CLI \"{}\" command error".format(shell_conf_radius), do_assert=True)
 
-    # Check there is no radius server with fake IP
-    res_show_radius_server = run_shell_helper(duthost, shell_show_radius_server)
-    for line in res_show_radius_server['stdout_lines']:
-        pytest_assert(line != fake_server_ip, "Radius server with IP {} already exists")
+    with allure.step('When: no radius ip server is configured.'):
+        res_show_radius_server = run_shell_helper(duthost, shell_show_radius_server)
+        for line in res_show_radius_server['stdout_lines']:
+            pytest_assert(line != fake_server_ip, "Radius server with IP {} already exists")
 
     try:
-        # Add fake Radius server
-        run_shell_helper(duthost, shell_conf_radius_add)
-        res_show_radius_server = run_shell_helper(duthost, shell_show_radius_server)
-        pytest_assert(fake_server_ip in res_show_radius_server['stdout_lines'], "Radius server {} doesn't added".format(fake_server_ip))
+        with allure.step('And: Configure fake radius ip server.'):
+            run_shell_helper(duthost, shell_conf_radius_add)
+        with allure.step('Then: Radius config is changed'):
+            res_show_radius_server = run_shell_helper(duthost, shell_show_radius_server)
+            pytest_assert(fake_server_ip in res_show_radius_server['stdout_lines'], "Radius server {} doesn't added".format(fake_server_ip))
     finally:
-        # Cleanup
-        run_shell_helper(duthost, shell_conf_radius_del, "Cleanup: error with deletion of fake RADIUS server ({})".format(fake_server_ip), do_assert=True)
+        with allure.step('Cleanup: Remove fake ip radius server'):
+            run_shell_helper(duthost, shell_conf_radius_del, "Cleanup: error with deletion of fake RADIUS server ({})".format(fake_server_ip), do_assert=True)
 
 
 def test_ntp_smoke(setup):
     """Verify that 'ntp' feature is running according to INCLUDE_NTP (build_metadata.yaml).
         If so, make basic NTP feature checks and verify"""
-    duthost = setup['duthost']
-    config = setup['config']
-    build_flag = "INCLUDE_NTP"
-    is_ntpd_proc = is_process_running(duthost, "ntpd")
-    deb_packets = ["ntp", "ntpstat"]
-    service = "ntp.service"
-    shell_show_ntp = "show ntp"
-    shell_conf_ntp = "sudo config ntp"
+
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        build_flag = "INCLUDE_NTP"
+        is_ntpd_proc = is_process_running(duthost, "ntpd")
+        deb_packets = ["ntp", "ntpstat"]
+        service = "ntp.service"
+        shell_show_ntp = "show ntp"
+        shell_conf_ntp = "sudo config ntp"
 
     if config and config[build_flag] == "n":
-        pytest_assert(not is_ntpd_proc, "There is running 'ntpd' process, but shouldn't be.")
-        pytest.skip("SKIP. NTP is disabled on build.")
+        with allure.step('"NTP" feature is disabled. Skip this test at this stage.'):
+            pytest_assert(not is_ntpd_proc, "There is running 'ntpd' process, but shouldn't be.")
+            # todo remove 'skip'
+            pytest.skip("SKIP. NTP is disabled on build.")
 
-    pytest_assert(is_ntpd_proc, "There is no running 'ntpd' process, but should be.")
+    with allure.step('Verify that "ntpd" process is running.'):
+        pytest_assert(is_ntpd_proc, "There is no running 'ntpd' process, but should be.")
 
-    # Check if deb packets installed
-    check_installed_package_helper(duthost, deb_packets)
+    with allure.step('Verify that NTP related deb packages are installed'):
+        check_installed_package_helper(duthost, deb_packets)
 
-    # Check if systemd service is active
-    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+    with allure.step('Verify that NTP service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
 
-    # Check CLI available
-    res_show_ntp = run_shell_helper(duthost, shell_show_ntp)
-    # This is workaround for 'show ntp' because ntpstat inside may return 1 (cli error == 2)
-    pytest_assert(res_show_ntp['rc'] < 2, "CLI \"{}\" command error".format(shell_show_ntp))
-    run_shell_helper(duthost, shell_conf_ntp, "CLI \"{}\" command error".format(shell_conf_ntp), do_assert=True)
+    with allure.step('Verify that NTP CLI is available.'):
+        res_show_ntp = run_shell_helper(duthost, shell_show_ntp)
+        # This is workaround for 'show ntp' because ntpstat inside may return 1 (cli error == 2)
+        pytest_assert(res_show_ntp['rc'] < 2, "CLI \"{}\" command error".format(shell_show_ntp))
+        run_shell_helper(duthost, shell_conf_ntp, "CLI \"{}\" command error".format(shell_conf_ntp), do_assert=True)
 
 
 def test_snmp_smoke(setup, loganalyzer):
     """Verify that 'snmp' container is running according to INCLUDE_SNMP (build_metadata.yaml).
         If so, make basic SNMP configuration and verify that configuration is applied"""
-    duthost = setup['duthost']
-    config = setup['config']
-    container = "snmp"
-    is_snmpd_proc = is_process_running(duthost, "snmpd")
-    service = "snmp.service"
-    shell_show_snmp = ["show snmpagentaddress", "show snmptrap"]
-    shell_conf_snmp = "sudo config snmp"
-    snmp_test_user = "SNMPSmokeTestUser"
-    shell_conf_snmp_user_add = shell_conf_snmp + " user add " + snmp_test_user + " noAuthNoPriv RO"
-    shell_conf_snmp_user_del = shell_conf_snmp + " user del " + snmp_test_user
+
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        container = "snmp"
+        is_snmpd_proc = is_process_running(duthost, "snmpd")
+        service = "snmp.service"
+        shell_show_snmp = ["show snmpagentaddress", "show snmptrap"]
+        shell_conf_snmp = "sudo config snmp"
+        snmp_test_user = "SNMPSmokeTestUser"
+        shell_conf_snmp_user_add = shell_conf_snmp + " user add " + snmp_test_user + " noAuthNoPriv RO"
+        shell_conf_snmp_user_del = shell_conf_snmp + " user del " + snmp_test_user
 
     # https://github.com/sonic-net/sonic-buildimage/issues/7862
     # loganalyzer fail for 'vs'
@@ -468,75 +503,79 @@ def test_snmp_smoke(setup, loganalyzer):
             loganalyzer[host].ignore_regex.append(r".*ERR wrong number of arguments for 'hset' command: Input/output error: Input/output error")
             loganalyzer[host].ignore_regex.append(r".*ERR sonic-db-cli: :- guard: RedisReply catches system_error: command:.*ERR wrong number of arguments for 'hset' command: Input/output error")
 
-
-    # Check metadata
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
-    pytest_assert(is_snmpd_proc, "There is no running 'snmpd' process, but should be.")
+    with allure.step('Verify "snmpd" process is running.'):
+        pytest_assert(is_snmpd_proc, "There is no running 'snmpd' process, but should be.")
 
-    # Check if systemd service is active
-    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
-
-    # Check CLI available
-    for shell_show in shell_show_snmp:
-        run_shell_helper(duthost, shell_show, "CLI \"{}\" command error".format(shell_show), do_assert=True)
-    run_shell_helper(duthost, shell_conf_snmp, "CLI \"{}\" command error".format(shell_conf_snmp), do_assert=True)
-
-    try:
-        # Add SNMP user
-        run_shell_helper(duthost, shell_conf_snmp_user_add, "CLI \"{}\" command error".format(shell_conf_snmp_user_add), do_assert=True)
-
-        # Check systemd service again bcs is restards after user add
+    with allure.step('Verify "snmp" service is active.'):
         pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
 
-        # Check user added to the DB
-        res_redis_snmp_user = run_shell_helper(duthost, "redis-cli -n 4 KEYS \"SNMP_USER|{}\"".format(snmp_test_user))
-        pytest_assert(res_redis_snmp_user['stdout_lines'] > 0, "User doesn't exist in redis-db")
+    with allure.step('Verify that SNMP CLI is available.'):
+        for shell_show in shell_show_snmp:
+            run_shell_helper(duthost, shell_show, "CLI \"{}\" command error".format(shell_show), do_assert=True)
+        run_shell_helper(duthost, shell_conf_snmp, "CLI \"{}\" command error".format(shell_conf_snmp), do_assert=True)
+
+    try:
+        with allure.step('When: Add new snmp user.'):
+            run_shell_helper(duthost, shell_conf_snmp_user_add, "CLI \"{}\" command error".format(shell_conf_snmp_user_add), do_assert=True)
+
+        with allure.step('Then: Systemd service again bcs is restarted after adding the user.'):
+            pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+
+        with allure.step('And: New user is added to the DB'):
+            res_redis_snmp_user = run_shell_helper(duthost, "redis-cli -n 4 KEYS \"SNMP_USER|{}\"".format(snmp_test_user))
+            pytest_assert(res_redis_snmp_user['stdout_lines'] > 0, "User doesn't exist in redis-db")
     finally:
-        # Cleanup
-        run_shell_helper(duthost, shell_conf_snmp_user_del, "Cleanup: error with deletion SNMP user ({})".format(snmp_test_user), do_assert=True)
+        with allure.step('Cleanup: Delete the snmp user'):
+            run_shell_helper(duthost, shell_conf_snmp_user_del, "Cleanup: error with deletion SNMP user ({})".format(snmp_test_user), do_assert=True)
 
 
 def test_lldp_smoke(setup):
     """Verify that 'LLDP' container is running according to INCLUDE_LLDP (build_metadata.yaml).
         Check 'docker events' and make sure that container is stable (no restart).
         Verify that 'lldpd' process is running."""
-    duthost = setup['duthost']
-    config = setup['config']
-    container = "lldp"
-    is_lldpd_proc = is_process_running(duthost, "lldpd")
-    service = "lldp.service"
-    shell_show_lldp = ["show lldp neighbors", "show lldp table"]
+
+    with allure.step('Setup: Get DUT host and metadata if any'):
+        duthost = setup['duthost']
+        config = setup['config']
+        container = "lldp"
+        is_lldpd_proc = is_process_running(duthost, "lldpd")
+        service = "lldp.service"
+        shell_show_lldp = ["show lldp neighbors", "show lldp table"]
 
     # check metadata
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
-    pytest_assert(is_lldpd_proc, "There is no running 'lldpd' process, but should be.")
+    with allure.step('Verify "lldpd" process is running.'):
+        pytest_assert(is_lldpd_proc, "There is no running 'lldpd' process, but should be.")
 
-    # Check if systemd service is active
-    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+    with allure.step('Verify "lldp" service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
 
-    # Check CLI available
-    for shell_show in shell_show_lldp:
-        run_shell_helper(duthost, shell_show, "CLI \"{}\" command error".format(shell_show), do_assert=True)
+    with allure.step('Verify that LLDP CLI is available.'):
+        for shell_show in shell_show_lldp:
+            run_shell_helper(duthost, shell_show, "CLI \"{}\" command error".format(shell_show), do_assert=True)
 
 
 def test_mgmt_framework_smoke(setup):
     """Verify that 'mgmt framework' container is running according to INCLUDE_MGMT_FRAMEWORK (build_metadata.yaml).
         Check 'docker events' and make sure that container is stable (no restart)."""
-    duthost = setup['duthost']
-    config = setup['config']
-    container = "mgmt-framework"
-    service = "mgmt-framework.service"
+
+    with allure.step('Setup: Get DUT host and metadata if any.'):
+        duthost = setup['duthost']
+        config = setup['config']
+        container = "mgmt-framework"
+        service = "mgmt-framework.service"
 
     # Check metadata
     check_container_sanity_helper(config, container)
     check_container_restarts_helper(duthost, container)
 
-    # Check if systemd service is active
-    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+    with allure.step('Verify "mgmt-framework" service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
 
     # Error: FATAL: root cannot launch CLI
     # TODO: resolve root error
@@ -547,16 +586,19 @@ def test_mgmt_framework_smoke(setup):
 def test_restapi_smoke(setup):
     """Verify that 'RESTAPI' container is running according to INCLUDE_RESTAPI (build_metadata.yaml).
         Check 'docker events' and make sure that container is stable (no restart)."""
-    duthost = setup['duthost']
-    config = setup['config']
-    build_flag = "INCLUDE_RESTAPI"
-    container = "restapi"
-    service = "restapi.service"
-    status = is_container_running(duthost, "restapi")
+
+    with allure.step('Setup: Get DUT host and metadata if any.'):
+        duthost = setup['duthost']
+        config = setup['config']
+        build_flag = "INCLUDE_RESTAPI"
+        container = "restapi"
+        service = "restapi.service"
+        status = is_container_running(duthost, "restapi")
 
     # Check metadata with container
     if config and config[build_flag] == "n" and status == False:
-        pytest.skip("SKIP. {} container is disabled on build.".format(container))
+        with allure.step('The "RESTAPI" feature is disabled in metadata. Skip this test at this stage.'):
+            pytest.skip("SKIP. {} container is disabled on build.".format(container))
     if config and config[build_flag] == "n":
         pytest_assert(status == False, "There is running {} container, but shouldn't be.".format(container))
     if config and config[build_flag] == "y":
@@ -564,8 +606,8 @@ def test_restapi_smoke(setup):
 
     pytest_assert(status, "{} container is not running.".format(container))
 
-    # Check if systemd service is active
-    pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
+    with allure.step('Verify "restapi" service is active.'):
+        pytest_assert(check_service_alive(duthost, service), "Systemd service {} isn't active".format(service))
 
 
 def check_installed_package_helper(duthost, package_list=None):
@@ -644,32 +686,35 @@ def check_container_sanity_helper(config, container):
     build_flag = sonic_ctrs[container]['build_flag']
     status = sonic_ctrs[container]['status']
 
-    if config and config[build_flag] == "n" and status == False:
-        pytest.skip("SKIP. {} container is disabled on build.".format(container))
-    if config and config[build_flag] == "n":
-        pytest_assert(status == False, "There is running {} container, but shouldn't be.".format(container))
-    if config and config[build_flag] == "y":
-        pytest_assert(status == True, "There is no running {} container, but should be.".format(container))
+    with allure.step('Verify that actual state of container is the same as in metadata.'):
+        if config and config[build_flag] == "n" and status == False:
+            pytest.skip("SKIP. {} container is disabled on build.".format(container))
+        if config and config[build_flag] == "n":
+            pytest_assert(status == False, "There is running {} container, but shouldn't be.".format(container))
+        if config and config[build_flag] == "y":
+            pytest_assert(status == True, "There is no running {} container, but should be.".format(container))
 
-    pytest_assert(status, "{} container is not running.".format(container))
+        pytest_assert(status, "{} container is not running.".format(container))
 
 
 def check_container_restarts_helper(duthost, container):
-    events_file = container + "_events"
-    uptime = get_uptime(duthost, hours=True, smooth=1)['stdout']
+    with allure.step('Verify that container is stable, no restarts.'):
+        events_file = container + "_events"
+        uptime = get_uptime(duthost, hours=True, smooth=1)['stdout']
 
-    shell_get_events = "docker events --since {}h --filter container={} --filter event=restart > {} &"\
-        .format(uptime, container, events_file)
-    shell_read_events_file = "[ -e {} ] && cat {}".format(events_file, events_file)
-    shell_clear_events_file = "[ -e {} ] && rm -f {}".format(events_file, events_file)
+        shell_get_events = "docker events --since {}h --filter container={} --filter event=restart > {} &"\
+            .format(uptime, container, events_file)
+        shell_read_events_file = "[ -e {} ] && cat {}".format(events_file, events_file)
+        shell_clear_events_file = "[ -e {} ] && rm -f {}".format(events_file, events_file)
 
-    try:
-        run_shell_helper(duthost, shell_get_events, "Error while calling docker events.", do_assert=True)
+        try:
+            run_shell_helper(duthost, shell_get_events, "Error while calling docker events.", do_assert=True)
 
-        res_read_events_file = run_shell_helper(duthost, shell_read_events_file, "Error while reading event file.", do_assert=True)
+            res_read_events_file = run_shell_helper(duthost, shell_read_events_file, "Error while reading event file.",
+                                                    do_assert=True)
 
-        restart_count = len(res_read_events_file['stdout_lines'])
-        pytest_assert(restart_count < 1, "Container have {} restarts".format(restart_count))
-    finally:
-        # cleanup
-        duthost.shell(shell_clear_events_file, module_ignore_errors=True)
+            restart_count = len(res_read_events_file['stdout_lines'])
+            pytest_assert(restart_count < 1, "Container have {} restarts".format(restart_count))
+        finally:
+            # cleanup
+            duthost.shell(shell_clear_events_file, module_ignore_errors=True)
