@@ -73,7 +73,9 @@ def publish_file(parent_dir, files, access_key, secret_key, account_id, bucket_n
 
 
 def notify_factory_api(uuid4):
-    # res = requests.post(f"https://factory.githedgehog.com/api/webhook/build/{uuid4}")
+    # TODO: Add request to Factory API when it will be ready
+    # res = requests.get(f"https://factory.githedgehog.com/api/webhook/build/{uuid4}")
+    # res = requests.get(f"https://api.factory.stage.x.githedgehog.com/api/webhook/build/{uuid4}")
     # assert res.status_code == 200
     pass
 
