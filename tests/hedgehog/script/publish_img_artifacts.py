@@ -37,9 +37,14 @@ def create_metadata_symlink(path):
     for root, dirs, files in os.walk(current_dir):
         if METADATA_FILENAME in files:
             metadata_path = os.path.join(root, METADATA_FILENAME)
+            break
 
     # create symlink, to avoid copying
-    os.symlink(metadata_path, METADATA_FILENAME)
+    if metadata_path != "":
+        os.symlink(metadata_path, METADATA_FILENAME)
+    else:
+        print("ERROR: no 'build_metadata.yaml' file inside '{}'.".format(path))
+        exit(1)
 
 
 def create_and_move_dir(parent_dir, dir_to_move):
