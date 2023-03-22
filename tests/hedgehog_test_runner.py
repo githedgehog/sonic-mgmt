@@ -159,6 +159,7 @@ def build_run_test_cmd(testbed_data, test_list, report_dir_name):
 
 
 def update_allure_report():
+    unmapped_tests = []
     tests_to_grup_map = read_yaml(MAPPING_TEST_TO_GROUP_FILE)
 
     # iterate over files with test results in the Allure directory
@@ -173,12 +174,18 @@ def update_allure_report():
             layer_label["value"] = tests_to_grup_map[test_info["fullName"]]
         else:
             layer_label["value"] ="Default"
+            unmapped_tests.append(test_info["fullName"])
 
         test_info["labels"].append(layer_label)
 
         #rewrite updated JSON
         with open(file, "w") as outfile:
             json.dump(test_info, outfile)
+
+        #write list with unmapped tests to file
+        if unmapped_tests:
+            with open(FULL_REPORT_DIR_PATH +'/unmapped_tests.txt', 'w') as outfile:
+                outfile.write('\n'.join(unmapped_tests))
 
 
 def run_cmd(cmd, print_only):

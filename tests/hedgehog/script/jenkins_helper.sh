@@ -22,6 +22,7 @@ done
 
 SONIC_MGMT_WD="/home/hedgehog/sonic-mgmt"
 SSH_OPTIONS="-o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+UNMAPPED_TESTS_FILE_NAME="unmapped_tests.txt"
 
 MGMT_CONTAINER=`ssh -q $SSH_OPTIONS $SERVER "docker ps -f ancestor=docker-sonic-mgmt-hedgehog:master --format {{.Names}}"`
 REPORT_PREFIX=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/tests/$TESTBED | yq .testbed.report_base_dir"`
@@ -70,4 +71,5 @@ copyArtifacts() {
     mkdir -p reports
     scp -r $SSH_OPTIONS $SERVER:$SONIC_MGMT_WD/$prefix/$REPORT_DIR reports/
     scp -r $SSH_OPTIONS $SERVER:$SONIC_MGMT_WD/tests/report.html reports/
+    mv reports/$REPORT_DIR/$UNMAPPED_TESTS_FILE_NAME reports/
 }
