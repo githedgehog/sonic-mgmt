@@ -158,8 +158,9 @@ def build_run_test_cmd(testbed_data, test_list, report_dir_name):
     return cmd
 
 
-def update_allure_report():
+def update_allure_report(testbed_data):
     unmapped_tests = []
+    unmapped_tc_file = "{}/{}".format(FULL_REPORT_DIR_PATH, testbed_data['testbed']['unmapped_tc_file'])
     tests_to_grup_map = read_yaml(MAPPING_TEST_TO_GROUP_FILE)
 
     # iterate over files with test results in the Allure directory
@@ -184,7 +185,7 @@ def update_allure_report():
 
         #write list with unmapped tests to file
         if unmapped_tests:
-            with open(FULL_REPORT_DIR_PATH +'/unmapped_tests.txt', 'w') as outfile:
+            with open(unmapped_tc_file, 'w') as outfile:
                 outfile.write('\n'.join(unmapped_tests))
 
 
@@ -239,7 +240,7 @@ def main(argv):
     run_cmd(test_run_cmd, is_print_only)
 
     # extend allure report with new labels
-    update_allure_report()
+    update_allure_report(testbed)
 
     # upload result into testops via `allurectl`
     allurectl_upload_cmd = build_allurectl_cmd(testbed, metadata, sonic_ver, args.ci_build_number, args.allurectl_token)

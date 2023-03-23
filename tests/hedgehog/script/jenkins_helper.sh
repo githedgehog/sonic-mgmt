@@ -22,12 +22,12 @@ done
 
 SONIC_MGMT_WD="/home/hedgehog/sonic-mgmt"
 SSH_OPTIONS="-o ServerAliveInterval=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-UNMAPPED_TESTS_FILE_NAME="unmapped_tests.txt"
 
 MGMT_CONTAINER=`ssh -q $SSH_OPTIONS $SERVER "docker ps -f ancestor=docker-sonic-mgmt-hedgehog:master --format {{.Names}}"`
 REPORT_PREFIX=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/tests/$TESTBED | yq .testbed.report_base_dir"`
 DUT_IP=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/tests/$TESTBED | yq .testbed.dut_ip"`
 REPORT_DIR="$(date +%Y%m%d)-$REPORT_DIR-b$CI_BUILD_NUMBER"
+UNMAPPED_TC_FILE_NAME=`ssh -q $SSH_OPTIONS $SERVER "cat $SONIC_MGMT_WD/tests/$TESTBED | yq .testbed.unmapped_tc_file"`
 
 
 redeployEnv() {
@@ -71,5 +71,5 @@ copyArtifacts() {
     mkdir -p reports
     scp -r $SSH_OPTIONS $SERVER:$SONIC_MGMT_WD/$prefix/$REPORT_DIR reports/
     scp -r $SSH_OPTIONS $SERVER:$SONIC_MGMT_WD/tests/report.html reports/
-    mv reports/$REPORT_DIR/$UNMAPPED_TESTS_FILE_NAME reports/
+    test -f reports/$REPORT_DIR/$UNMAPPED_TC_FILE_NAME && mv reports/$REPORT_DIR/$UNMAPPED_TC_FILE_NAME reports/
 }
