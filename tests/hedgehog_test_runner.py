@@ -184,9 +184,8 @@ def update_allure_report(testbed_data):
             json.dump(test_info, outfile)
 
         #write list with unmapped tests to file
-        if unmapped_tests:
-            with open(unmapped_tc_file, 'w') as outfile:
-                outfile.write('\n'.join(unmapped_tests))
+        with open(unmapped_tc_file, 'w') as outfile:
+            outfile.write('\n'.join(unmapped_tests))
 
 
 def run_cmd(cmd, print_only):

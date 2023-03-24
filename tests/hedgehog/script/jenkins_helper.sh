@@ -71,5 +71,5 @@ copyArtifacts() {
     mkdir -p reports
     scp -r $SSH_OPTIONS $SERVER:$SONIC_MGMT_WD/$prefix/$REPORT_DIR reports/
     scp -r $SSH_OPTIONS $SERVER:$SONIC_MGMT_WD/tests/report.html reports/
-    test -f reports/$REPORT_DIR/$UNMAPPED_TC_FILE_NAME && mv reports/$REPORT_DIR/$UNMAPPED_TC_FILE_NAME reports/
+    mv reports/$REPORT_DIR/$UNMAPPED_TC_FILE_NAME reports/
 }
