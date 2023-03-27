@@ -7,6 +7,7 @@
   "topo": "t0,any"
   "host_pattern": "vlab-01"
   "report_base_dir": "/data/sonic-mgmt/report/vsTestbed-01/t0/"
+  "unmapped_tc_file": "unmapped_tests.txt"
 "testops":
   "tag": "generated dynamically in runner.py"
   "endpoint": "https://hedgehog.testops.cloud"
