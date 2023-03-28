@@ -33,3 +33,4 @@ dev-msn2700-01,Ethernet120,dev-7260-10,Ethernet31,40000,1711,Access
 dev-msn2700-01,Ethernet124,dev-7260-10,Ethernet32,40000,1712,Access
 dev-7260-11,Ethernet19,dev-acs-serv-01,p4p1,40000,,Trunk
 dev-7260-11,Ethernet30,dev-7260-10,Ethernet64,40000,1681-1712,Trunk
+#todo(adovhan) add links (dut,fanout)

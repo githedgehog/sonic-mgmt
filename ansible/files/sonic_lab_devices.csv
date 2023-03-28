@@ -1,8 +1,14 @@
 Hostname,ManagementIp,HwSku,Type,Protocol
-dev-msn2700-01,10.251.0.188/23,Mellanox-2700,DevSonic,
-dev-7260-10,10.251.0.13/23,Arista-7260QX-64,FanoutLeaf,
-dev-7260-11,10.251.0.234/23,Arista-7260QX-64,FanoutRoot,
-dev-acs-serv-01,10.251.0.245/23,TestServ,Server,
-pdu-1,192.168.9.2,Apc,Pdu,snmp
-pdu-2,192.168.9.3,Sentry,Pdu,snmp
-console-1,192.168.10.1,Cisco,ConsoleServer,ssh
+dev-acs-serv-01,192.168.88.21/24,TestServ,Server,  # create new file, the same as ansible/host_vars/STR-ACS-SERV-01.yml
+# dev-sn2700,<ip / mask>,Mellanox-SN2700,FanoutRoot,
+dev-sn2700-01,192.168.88.246/24,Mellanox-SN2700,FanoutLeaf,
+dev-as7712-32x-01,192.168.88.105/24,Accton-AS7712-32X,DevSonic,
+
+
+# dev-msn2700-01,10.251.0.188/23,Mellanox-2700,DevSonic,
+# dev-7260-10,10.251.0.13/23,Arista-7260QX-64,FanoutLeaf,
+# dev-7260-11,10.251.0.234/23,Arista-7260QX-64,FanoutRoot,
+# dev-acs-serv-01,10.251.0.245/23,TestServ,Server,
+# pdu-1,192.168.9.2,Apc,Pdu,snmp
+# pdu-2,192.168.9.3,Sentry,Pdu,snmp
+# console-1,192.168.10.1,Cisco,ConsoleServer,ssh

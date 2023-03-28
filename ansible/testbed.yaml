@@ -1,5 +1,35 @@
 ---
 
+- conf-name: 01-t0
+  group-name: vms1-1
+  topo: t0
+  ptf_image_name: docker-ptf
+  ptf: ptf_vms1-1
+  ptf_ip: 10.250.128.196/16 #todo(adovhan) set correct ip(ptf)
+  ptf_ipv6:
+  server: server_1
+  vm_base: VM0100
+  dut:
+    - dev-as7712-32x-01
+  inv_name: lab
+  auto_recover: 'False'
+  comment: Hedgehog T0 topology as7712-32x-01 Testbed 01
+
+- conf-name: 01-t1
+  group-name: vms1-1
+  topo: t1
+  ptf_image_name: docker-ptf
+  ptf: ptf_vms1-1
+  ptf_ip: 10.250.128.196/16 #todo(adovhan) set correct ip(ptf)
+  ptf_ipv6:
+  server: server_1
+  vm_base: VM0100
+  dut:
+    - dev-as7712-32x-01
+  inv_name: lab
+  auto_recover: 'False'
+  comment: Hedgehog T1 topology as7712-32x-01 Testbed 01
+
 - conf-name: ptf1-m
   group-name: ptf1
   topo: ptf32
