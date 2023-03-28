@@ -31,5 +31,4 @@ dev-as7712-32x-01,Ethernet112,dev-sn2700-01,Eth1/23/1,10000,1709,Access
 dev-as7712-32x-01,Ethernet116,dev-sn2700-01,Eth1/23/2,10000,1710,Access
 dev-as7712-32x-01,Ethernet120,dev-sn2700-01,Eth1/23/3,10000,1711,Access
 dev-as7712-32x-01,Ethernet124,dev-sn2700-01,Eth1/23/4,10000,1712,Access
-dev-sn2700-01,Eth1/31,str-acs-serv-01,p4p1,40000,1681-1712,Trunk    # Eth1/31?
-#todo(adovhan) add links (dut,fanout) p4p1 / Eth1/31 ?
+dev-sn2700-01,Eth1/32/1,str-acs-serv-01,ens3f1,40000,1681-1712,Trunk

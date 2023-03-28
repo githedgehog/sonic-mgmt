@@ -38,8 +38,7 @@
       <DeviceInterfaceLink BandWidth="10000" EndDevice="dev-sn2700-01" EndPort="Eth1/23/2" StartDevice="dev-as7712-32x-01" StartPort="Ethernet116"/>
       <DeviceInterfaceLink BandWidth="10000" EndDevice="dev-sn2700-01" EndPort="Eth1/23/3" StartDevice="dev-as7712-32x-01" StartPort="Ethernet120"/>
       <DeviceInterfaceLink BandWidth="10000" EndDevice="dev-sn2700-01" EndPort="Eth1/23/4" StartDevice="dev-as7712-32x-01" StartPort="Ethernet124"/>
-      <DeviceInterfaceLink BandWidth="10000" EndDevice="str-acs-serv-01" EndPort="p4p1" StartDevice="dev-sn2700-01" StartPort="Ethernet1/31"/>
-<!--      todo(adovhan) set correct port p4p1 / Eth1/31-->
+      <DeviceInterfaceLink BandWidth="10000" EndDevice="str-acs-serv-01" EndPort="ens3f1" StartDevice="dev-sn2700-01" StartPort="Ethernet1/32/1"/>
     </DeviceInterfaceLinks>
   </PhysicalNetworkGraphDeclaration>
   <DataPlaneGraph>

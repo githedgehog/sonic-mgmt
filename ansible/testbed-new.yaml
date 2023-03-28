@@ -784,9 +784,9 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
 
     dev-sn2700-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
         interfaces: # DUT/ start device
-            Eth1/31:
+            Eth1/32/1:
                 EndDevice: str-acs-serv-01
-                EndPort: eno2 # todo(adovhan) set correct interface eno2 / Eth1/31
+                EndPort: ens3f1
                 Bandwidth: 10000
                 VlanID: 1681-1712
                 VlanMode: Trunk

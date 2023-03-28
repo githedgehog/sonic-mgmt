@@ -3,5 +3,5 @@ mgmt_prefixlen: 23
 mgmt_gw: 10.255.0.1  todo(adovhan) set correct ip
 mgmt_gw_v6: fec0::1
 #vm_mgmt_gw: 10.254.0.1
-external_port: p4p1
+external_port: ens3f1
 
