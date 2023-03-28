@@ -51,9 +51,6 @@ redeployEnv() {
 
     echo "Reboot DUT to apply changes"
     sshpass -p $DUT_PASS ssh $SSH_OPTIONS -o "ProxyCommand ssh $SSH_OPTIONS $SERVER -W %h:%p" $DUT_USER@$DUT_IP "sudo reboot"
-
-    echo "Apply hedgehog user patch"
-    ssh $SSH_OPTIONS $SERVER "cd $SONIC_MGMT_WD && git apply test_hedgehog_user.patch"
 }
 
 runTests() {
