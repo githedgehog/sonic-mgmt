@@ -1,5 +1,5 @@
 Hostname,ManagementIp,HwSku,Type,Protocol
-dev-acs-serv-01,192.168.88.21/24,TestServ,Server,  # create new file, the same as ansible/host_vars/STR-ACS-SERV-01.yml
+str-acs-serv-01,192.168.88.21/24,TestServ,Server,  # create new file, the same as ansible/host_vars/STR-ACS-SERV-01.yml
 # dev-sn2700,<ip / mask>,Mellanox-SN2700,FanoutRoot,
 dev-sn2700-01,192.168.88.246/24,Mellanox-SN2700,FanoutLeaf,
 dev-as7712-32x-01,192.168.88.105/24,Accton-AS7712-32X,DevSonic,
