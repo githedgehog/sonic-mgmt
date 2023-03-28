@@ -587,24 +587,210 @@ testbed:
 # topology dictionary does not cross reference with other files 
 topology:                               # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
     # todo(adovhan) add links (dut, fanout)
-#    dev-as7712-32x-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv  # ports that goes to TESTBED SERVER
-#        interfaces: # DUT/ start device
-#            Ethernet4:
-#                EndDevice: dev-sn2700-01
-#                EndPort: Ethernet1/2/1
-#                Bandwidth: 10000
-#                VlanID: 1681
-#                VlanMode: Access
-#
-#
-#    dev-sn2700-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
-#        interfaces: # DUT/ start device
-#            Ethernet1/1:
-#                EndDevice: str-acs-serv-01
-#                EndPort: eno2
-#                Bandwidth: 10000
-#                VlanID: 1681-1712
-#                VlanMode: Trunk
+    dev-as7712-32x-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv  # ports that goes to TESTBED SERVER
+        interfaces: # DUT/ start device
+            Ethernet0:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/1
+                Bandwidth: 10000
+                VlanID: 1681
+                VlanMode: Access
+            Ethernet4:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/2
+                Bandwidth: 10000
+                VlanID: 1682
+                VlanMode: Access
+            Ethernet8:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/3
+                Bandwidth: 10000
+                VlanID: 1683
+                VlanMode: Access
+            Ethernet12:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/4
+                Bandwidth: 10000
+                VlanID: 1684
+                VlanMode: Access
+            Ethernet16:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/1
+                Bandwidth: 10000
+                VlanID: 1685
+                VlanMode: Access
+            Ethernet20:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/2
+                Bandwidth: 10000
+                VlanID: 1686
+                VlanMode: Access
+            Ethernet24:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/3
+                Bandwidth: 10000
+                VlanID: 1687
+                VlanMode: Access
+            Ethernet28:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/4
+                Bandwidth: 10000
+                VlanID: 1688
+                VlanMode: Access
+            Ethernet32:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/1
+                Bandwidth: 10000
+                VlanID: 1689
+                VlanMode: Access
+            Ethernet36:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/2
+                Bandwidth: 10000
+                VlanID: 1690
+                VlanMode: Access
+            Ethernet40:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/3
+                Bandwidth: 10000
+                VlanID: 1691
+                VlanMode: Access
+            Ethernet44:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/4
+                Bandwidth: 10000
+                VlanID: 1692
+                VlanMode: Access
+            Ethernet48:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/1
+                Bandwidth: 10000
+                VlanID: 1693
+                VlanMode: Access
+            Ethernet52:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/2
+                Bandwidth: 10000
+                VlanID: 1694
+                VlanMode: Access
+            Ethernet56:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/3
+                Bandwidth: 10000
+                VlanID: 1695
+                VlanMode: Access
+            Ethernet60:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/4
+                Bandwidth: 10000
+                VlanID: 1696
+                VlanMode: Access
+            Ethernet64:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/1
+                Bandwidth: 10000
+                VlanID: 1697
+                VlanMode: Access
+            Ethernet68:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/2
+                Bandwidth: 10000
+                VlanID: 1698
+                VlanMode: Access
+            Ethernet72:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/3
+                Bandwidth: 10000
+                VlanID: 1699
+                VlanMode: Access
+            Ethernet76:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/4
+                Bandwidth: 10000
+                VlanID: 1700
+                VlanMode: Access
+            Ethernet80:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/1
+                Bandwidth: 10000
+                VlanID: 1701
+                VlanMode: Access
+            Ethernet84:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/2
+                Bandwidth: 10000
+                VlanID: 1702
+                VlanMode: Access
+            Ethernet88:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/3
+                Bandwidth: 10000
+                VlanID: 1703
+                VlanMode: Access
+            Ethernet92:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/4
+                Bandwidth: 10000
+                VlanID: 1704
+                VlanMode: Access
+            Ethernet96:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/1
+                Bandwidth: 10000
+                VlanID: 1705
+                VlanMode: Access
+            Ethernet100:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/2
+                Bandwidth: 10000
+                VlanID: 1706
+                VlanMode: Access
+            Ethernet104:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/3
+                Bandwidth: 10000
+                VlanID: 1707
+                VlanMode: Access
+            Ethernet108:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/4
+                Bandwidth: 10000
+                VlanID: 1708
+                VlanMode: Access
+            Ethernet112:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/1
+                Bandwidth: 10000
+                VlanID: 1709
+                VlanMode: Access
+            Ethernet116:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/2
+                Bandwidth: 10000
+                VlanID: 1710
+                VlanMode: Access
+            Ethernet120:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/3
+                Bandwidth: 10000
+                VlanID: 1711
+                VlanMode: Access
+            Ethernet124:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/4
+                Bandwidth: 10000
+                VlanID: 1712
+                VlanMode: Access
+
+    dev-sn2700-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
+        interfaces: # DUT/ start device
+            Eth1/31:
+                EndDevice: str-acs-serv-01
+                EndPort: eno2 # todo(adovhan) set correct interface eno2 / Eth1/31
+                Bandwidth: 10000
+                VlanID: 1681-1712
+                VlanMode: Trunk
+
     str-msn2700-01:                     # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
         interfaces:                     # DUT/ start device
             Ethernet0:
