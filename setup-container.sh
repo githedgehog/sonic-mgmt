@@ -251,11 +251,11 @@ fi
 # Install pyyaml, it used by hedgehog_test_runner.py. do not use env-python3, it is virt env for ptf container.
 RUN /usr/local/sbin/pip3 install pyyaml
 
-# Download allurectl for uploading test result on 'testops'
-RUN /usr/local/sbin/wget https://github.com/allure-framework/allurectl/releases/latest/download/allurectl_linux_386 -O /opt/allurectl
-RUN chmod +x /opt/allurectl
-
 EOF
+
+    log_info "add step to copy allurectl into opt in Dockerfile.j2"
+    eval "echo \"# Download allurectl for uploading test result on 'testops'\" >> ${TMP_DIR}/Dockerfile.j2"
+    eval "echo \"COPY ${PWD}/tests/hedgehog/script/allurectl /opt/allurectl\" >> ${TMP_DIR}/Dockerfile.j2"
 
     log_info "prepare an environment file: ${TMP_DIR}/data.env"
     cat <<EOF > "${TMP_DIR}/data.env"
