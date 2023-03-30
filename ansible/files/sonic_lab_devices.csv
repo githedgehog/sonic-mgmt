@@ -1,5 +1,5 @@
 Hostname,ManagementIp,HwSku,Type,Protocol
-str-acs-serv-01,192.168.88.21/24,TestServ,Server,  # create new file, the same as ansible/host_vars/STR-ACS-SERV-01.yml
+str-acs-serv-01,10.250.0.1/16,TestServ,Server,
 # dev-sn2700,<ip / mask>,Mellanox-SN2700,FanoutRoot,
 dev-sn2700-01,192.168.88.246/24,Mellanox-SN2700,FanoutLeaf,
 dev-as7712-32x-01,192.168.88.105/24,Accton-AS7712-32X,DevSonic,
@@ -12,4 +12,4 @@ dev-as7712-32x-01,192.168.88.105/24,Accton-AS7712-32X,DevSonic,
 # pdu-1,192.168.9.2,Apc,Pdu,snmp
 # pdu-2,192.168.9.3,Sentry,Pdu,snmp
 # console-1,192.168.10.1,Cisco,ConsoleServer,ssh
-portname="Eth1/
+# portname="Eth1/

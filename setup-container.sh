@@ -211,7 +211,8 @@ fi
 # Environment configuration, skip python virtual environments
 RUN if [ '{{ USER_NAME }}' != 'AzDevOps' ]; then \
 /bin/bash -O extglob -c 'cp -a -f /var/AzDevOps/!(env-*) /home/{{ USER_NAME }}/'; \
-/bin/bash -c 'cp -a -f /var/AzDevOps/{.profile,.local,.ssh} /home/{{ USER_NAME }}/'; \
+for hidden_stuff in '.profile .local .ssh'; do \
+/bin/bash -c 'cp -a -f /var/AzDevOps/$hidden_stuff /home/{{ USER_NAME }}/ || true'; done \
 fi
 
 # Permissions configuration
@@ -251,9 +252,9 @@ fi
 # Install pyyaml, it used by hedgehog_test_runner.py. do not use env-python3, it is virt env for ptf container.
 RUN /usr/local/sbin/pip3 install pyyaml
 
-# Download allurectl for uploading test result on 'testops'
-RUN /usr/local/sbin/wget https://github.com/allure-framework/allurectl/releases/latest/download/allurectl_linux_386 -O /opt/allurectl
-RUN chmod +x /opt/allurectl
+# # Download allurectl for uploading test result on 'testops'
+# RUN /usr/local/sbin/wget https://github.com/allure-framework/allurectl/releases/latest/download/allurectl_linux_386 -O /opt/allurectl
+# RUN chmod +x /opt/allurectl
 
 EOF
 

@@ -256,9 +256,9 @@ server_1:
 vm_host_1:
   hosts:
     STR-ACS-VSERV-01:
-      ansible_host: 172.17.0.1
-      ansible_user: hedgehog
-      vm_host_user: hedgehog
+      ansible_host: 10.250.0.1
+      ansible_user: hhtestbed
+      vm_host_user: hhtestbed
 
 vms_1:
   hosts:

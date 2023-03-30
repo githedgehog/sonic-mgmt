@@ -62,7 +62,7 @@ all:
 vm_host_1:
   hosts:
     STR-ACS-SERV-01:
-      ansible_host: 192.168.88.21
+      ansible_host: 10.250.0.1
 
 vm_host_2:
   hosts:

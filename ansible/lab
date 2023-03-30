@@ -13,8 +13,8 @@ all:
               ansible_host: 192.168.88.246
     ptf:
       hosts:
-        ptf_vms1-1: todo(adovhan) set correct ip
-          ansible_host: 10.255.0.196
+        ptf_vms1-1:
+          ansible_host: 10.250.0.196
           ansible_ssh_user: root
           ansible_ssh_pass: root
 

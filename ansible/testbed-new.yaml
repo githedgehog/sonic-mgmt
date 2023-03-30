@@ -178,7 +178,7 @@ devices:
             username:                 
             password:               
         ansible:
-            ansible_host: 10.251.0.245/23           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv # todo(adovhan) set correct ip (testServer)
+            ansible_host: 10.250.0.1/16           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv # todo(adovhan) set correct ip (testServer)
             ansible_ssh_pass: password              # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             ansible_become_pass: password           # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             sonicadmin_user: admin                  # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
@@ -251,7 +251,7 @@ devices:
 host_vars:
     str-acs-serv-01:
         mgmt_bridge: br1                # source: sonic-mgmt/host_vars
-        mgmt_prefixlen: 24              # source: sonic-mgmt/host_vars
+        mgmt_prefixlen: 16              # source: sonic-mgmt/host_vars
         mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars #todo(adovhan) set correct ip
         external_port: ens3f0           # source: sonic-mgmt/host_vars
 

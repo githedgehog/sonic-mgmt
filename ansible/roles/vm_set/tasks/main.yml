@@ -116,8 +116,8 @@
   environment: "{{ proxy_env | default({}) }}"
   ignore_errors: yes
 
-- include_tasks: docker.yml
-  when: package_installation|bool
+# - include_tasks: docker.yml
+#   when: package_installation|bool
 
 - name: Ensure {{ ansible_user }} in docker,sudo group
   user:
