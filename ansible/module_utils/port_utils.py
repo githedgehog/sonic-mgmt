@@ -164,6 +164,7 @@ def get_port_alias_to_name_map(hwsku, asic_name=None):
                 port_alias_to_name_map["Ethernet%d" % i] = "Ethernet%d" % (i - 1)
             for i in range(49, 65):
                 port_alias_to_name_map["Ethernet%d/1" % i] = "Ethernet%d" % ((i - 49) * 4 + 48)
+        # todo(adovhan) use hardcoded mapping in case 'split' is using
         elif hwsku == "Accton-AS7712-32X":
             for i in range(1, 33):
                 port_alias_to_name_map["hundredGigE%d" % i] = "Ethernet%d" % ((i - 1) * 4)

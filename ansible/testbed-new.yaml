@@ -50,7 +50,13 @@ device_groups:
         vars:
             mgmt_subnet_mask_length: "24"                        # source: sonic-mgmt/ansible/lab
     sonic:
-        children: [sonic_s6000, sonic_s6100, sonic_sn2700_40, sonic_a7260]      # source: sonic-mgmt/ansible/lab
+        children: [sonic_s6000, sonic_s6100, sonic_sn2700_40, sonic_a7260, sonic_as7712]      # source: sonic-mgmt/ansible/lab
+    sonic_as7712:
+        host: [dev-as7712-32x-01]                                     # source: sonic-mgmt/ansible/lab
+        vars:
+            hwsku: "Accton-AS7712-32X"                               # source: sonic-mgmt/ansible/lab
+            iface_speed: '40000'                                 # source: sonic-mgmt/ansible/lab
+            iface_speed2: '100000'                                 # source: sonic-mgmt/ansible/lab
     sonic_s6000:
         host: [lab-s6000-01,lab-s6000-02]                        # source: sonic-mgmt/ansible/lab
         vars:
@@ -71,7 +77,7 @@ device_groups:
         vars:
             iface_speed: '100000'                                # source: sonic-mgmt/ansible/lab
     fanout:
-        host: [str-7260-10, str-7260-11, str-msn2700-02]         # source: sonic-mgmt/ansible/lab
+        host: [str-7260-10, str-7260-11, str-msn2700-02, dev-sn2700-01]         # source: sonic-mgmt/ansible/lab
     ptf:
         host: [ptf_ptf1, ptf_vms1-1]                             # source: sonic-mgmt/ansible/lab
 
@@ -79,6 +85,35 @@ device_groups:
 # devices is used to export sonic_lab_devices, fanout/secrets, lab/secrets, lab
 # there are no cross references
 devices:
+    dev-as7712-32x-01:
+        device_type: DevSonic                           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+        hwsku: Accton-AS7712-32X                        # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+        alias:
+        credentials:
+            username: admin
+            password: YourPaSsWoRd
+            enable_password:
+        ansible:
+            ansible_host: 192.168.88.105/24           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+            ansible_ssh_user: admin
+            ansible_ssh_pass: YourPaSsWoRd
+
+    dev-sn2700-01:
+        device_type: FanoutLeaf                       # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+        hwsku: Mellanox-SN2700                        # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+        alias:
+        credentials:
+            username:
+            password:
+            enable_password:
+        ansible:
+            ansible_host: 192.168.88.246/24          # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+            #todo(adovhan) set correct creds
+            ansible_ssh_user: user                   # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+            ansible_ssh_pass: password               # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+            fanout_sonic_user: admin                 # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+            fanout_sonic_password: password          # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+
     str-msn2700-01:                         
         device_type: DevSonic                       # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv      
         hwsku: Mellanox-2700                        # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
@@ -143,7 +178,7 @@ devices:
             username:                 
             password:               
         ansible:
-            ansible_host: 10.251.0.245/23           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
+            ansible_host: 10.251.0.245/23           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv # todo(adovhan) set correct ip (testServer)
             ansible_ssh_pass: password              # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             ansible_become_pass: password           # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             sonicadmin_user: admin                  # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
@@ -217,7 +252,7 @@ host_vars:
     str-acs-serv-01:
         mgmt_bridge: br1                # source: sonic-mgmt/host_vars
         mgmt_prefixlen: 24              # source: sonic-mgmt/host_vars
-        mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars
+        mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars #todo(adovhan) set correct ip
         external_port: ens3f0           # source: sonic-mgmt/host_vars
 
 # veos_groups is a dictionary that contains all veos groups
@@ -425,6 +460,28 @@ veos:
 # testbed is used to generate testbed.csv
 # testbed dictionary does not cross reference with other files 
 testbed:
+    01-t0: # source: sonic-mgmt/ansible/testbed.csv
+        group-name: vms1-1                                 # source: sonic-mgmt/ansible/testbed.csv
+        topo: t0                                            # source: sonic-mgmt/ansible/testbed.csv
+        ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
+        ptf: ptf_vms1-1
+        ptf_ip: 10.250.128.196/16                           # source: sonic-mgmt/ansible/testbed.csv todo(adovhan) set correcr ip
+        server: server_1                                    # source: sonic-mgmt/ansible/testbed.csv
+        vm_base: VM0100                                     # source: sonic-mgmt/ansible/testbed.csv
+        dut: dev-as7712-32x-01                               # source: sonic-mgmt/ansible/testbed.csv
+        comment: Hedgehog T0 topology as7712-32x-01 Testbed 01
+
+    01-t1: # source: sonic-mgmt/ansible/testbed.csv
+        group-name: vms1-1                                  # source: sonic-mgmt/ansible/testbed.csv
+        topo: t1                                            # source: sonic-mgmt/ansible/testbed.csv
+        ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
+        ptf: ptf_vms1-1
+        ptf_ip: 10.250.128.196/16                           # source: sonic-mgmt/ansible/testbed.csv
+        server: server_1                                    # source: sonic-mgmt/ansible/testbed.csv
+        vm_base: VM0100                                     # source: sonic-mgmt/ansible/testbed.csv
+        dut: dev-as7712-32x-01                               # source: sonic-mgmt/ansible/testbed.csv
+        comment: Hedgehog T1 topology as7712-32x-01 Testbed 01
+
     ptf1-m:
         group-name: ptf1                                    # source: sonic-mgmt/ansible/testbed.csv
         topo: ptf32                                         # source: sonic-mgmt/ansible/testbed.csv
@@ -529,6 +586,211 @@ testbed:
 # topology is used to generate sonic_lab_links
 # topology dictionary does not cross reference with other files 
 topology:                               # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
+    # todo(adovhan) add links (dut, fanout)
+    dev-as7712-32x-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv  # ports that goes to TESTBED SERVER
+        interfaces: # DUT/ start device
+            Ethernet0:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/1
+                Bandwidth: 10000
+                VlanID: 1681
+                VlanMode: Access
+            Ethernet4:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/2
+                Bandwidth: 10000
+                VlanID: 1682
+                VlanMode: Access
+            Ethernet8:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/3
+                Bandwidth: 10000
+                VlanID: 1683
+                VlanMode: Access
+            Ethernet12:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/9/4
+                Bandwidth: 10000
+                VlanID: 1684
+                VlanMode: Access
+            Ethernet16:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/1
+                Bandwidth: 10000
+                VlanID: 1685
+                VlanMode: Access
+            Ethernet20:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/2
+                Bandwidth: 10000
+                VlanID: 1686
+                VlanMode: Access
+            Ethernet24:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/3
+                Bandwidth: 10000
+                VlanID: 1687
+                VlanMode: Access
+            Ethernet28:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/11/4
+                Bandwidth: 10000
+                VlanID: 1688
+                VlanMode: Access
+            Ethernet32:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/1
+                Bandwidth: 10000
+                VlanID: 1689
+                VlanMode: Access
+            Ethernet36:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/2
+                Bandwidth: 10000
+                VlanID: 1690
+                VlanMode: Access
+            Ethernet40:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/3
+                Bandwidth: 10000
+                VlanID: 1691
+                VlanMode: Access
+            Ethernet44:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/13/4
+                Bandwidth: 10000
+                VlanID: 1692
+                VlanMode: Access
+            Ethernet48:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/1
+                Bandwidth: 10000
+                VlanID: 1693
+                VlanMode: Access
+            Ethernet52:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/2
+                Bandwidth: 10000
+                VlanID: 1694
+                VlanMode: Access
+            Ethernet56:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/3
+                Bandwidth: 10000
+                VlanID: 1695
+                VlanMode: Access
+            Ethernet60:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/15/4
+                Bandwidth: 10000
+                VlanID: 1696
+                VlanMode: Access
+            Ethernet64:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/1
+                Bandwidth: 10000
+                VlanID: 1697
+                VlanMode: Access
+            Ethernet68:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/2
+                Bandwidth: 10000
+                VlanID: 1698
+                VlanMode: Access
+            Ethernet72:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/3
+                Bandwidth: 10000
+                VlanID: 1699
+                VlanMode: Access
+            Ethernet76:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/17/4
+                Bandwidth: 10000
+                VlanID: 1700
+                VlanMode: Access
+            Ethernet80:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/1
+                Bandwidth: 10000
+                VlanID: 1701
+                VlanMode: Access
+            Ethernet84:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/2
+                Bandwidth: 10000
+                VlanID: 1702
+                VlanMode: Access
+            Ethernet88:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/3
+                Bandwidth: 10000
+                VlanID: 1703
+                VlanMode: Access
+            Ethernet92:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/19/4
+                Bandwidth: 10000
+                VlanID: 1704
+                VlanMode: Access
+            Ethernet96:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/1
+                Bandwidth: 10000
+                VlanID: 1705
+                VlanMode: Access
+            Ethernet100:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/2
+                Bandwidth: 10000
+                VlanID: 1706
+                VlanMode: Access
+            Ethernet104:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/3
+                Bandwidth: 10000
+                VlanID: 1707
+                VlanMode: Access
+            Ethernet108:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/21/4
+                Bandwidth: 10000
+                VlanID: 1708
+                VlanMode: Access
+            Ethernet112:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/1
+                Bandwidth: 10000
+                VlanID: 1709
+                VlanMode: Access
+            Ethernet116:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/2
+                Bandwidth: 10000
+                VlanID: 1710
+                VlanMode: Access
+            Ethernet120:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/3
+                Bandwidth: 10000
+                VlanID: 1711
+                VlanMode: Access
+            Ethernet124:
+                EndDevice: dev-sn2700-01
+                EndPort: Ethernet1/23/4
+                Bandwidth: 10000
+                VlanID: 1712
+                VlanMode: Access
+
+    dev-sn2700-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
+        interfaces: # DUT/ start device
+            Eth1/32/1:
+                EndDevice: str-acs-serv-01
+                EndPort: ens3f1
+                Bandwidth: 10000
+                VlanID: 1681-1712
+                VlanMode: Trunk
+
     str-msn2700-01:                     # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
         interfaces:                     # DUT/ start device
             Ethernet0:
