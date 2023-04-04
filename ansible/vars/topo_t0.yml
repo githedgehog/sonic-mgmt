@@ -27,12 +27,11 @@ topology:
     - 24
     - 25
     - 26
-    - 27
   disabled_host_interfaces:
     - 0
     - 25
     - 26
-    - 27
+    - 31
   VMs:
     ARISTA01T1:
       vlans:
@@ -48,7 +47,7 @@ topology:
       vm_offset: 2
     ARISTA04T1:
       vlans:
-        - 31
+        - 27
       vm_offset: 3
   DUT:
     vlan_configs:
