@@ -14,7 +14,7 @@ all:
     ptf:
       hosts:
         ptf_vms1-1:
-          ansible_host: 10.250.0.196
+          ansible_host: 10.250.128.196
           ansible_ssh_user: root
           ansible_ssh_pass: root
 

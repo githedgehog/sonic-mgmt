@@ -646,7 +646,7 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
             Ethernet36:
                 EndDevice: dev-sn2700-01
                 EndPort: Ethernet1/10
-                Bandwidth: 10000
+                Bandwidth: 100000
                 VlanID: 1690
                 VlanMode: Access
             Ethernet40:
@@ -658,13 +658,13 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
             Ethernet44:
                 EndDevice: dev-sn2700-01
                 EndPort: Ethernet1/12
-                Bandwidth: 10000
+                Bandwidth: 100000
                 VlanID: 1692
                 VlanMode: Access
             Ethernet48:
                 EndDevice: dev-sn2700-01
                 EndPort: Ethernet1/13
-                Bandwidth: 10000
+                Bandwidth: 100000
                 VlanID: 1693
                 VlanMode: Access
             Ethernet52:
@@ -730,7 +730,7 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
             Ethernet92:
                 EndDevice: dev-sn2700-01
                 EndPort: Ethernet1/24
-                Bandwidth: 10000
+                Bandwidth: 100000
                 VlanID: 1704
                 VlanMode: Access
             Ethernet96:
@@ -760,7 +760,7 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
             Ethernet112:
                 EndDevice: dev-sn2700-01
                 EndPort: Ethernet1/29
-                Bandwidth: 10000
+                Bandwidth: 100000
                 VlanID: 1709
                 VlanMode: Access
             Ethernet116:
@@ -772,7 +772,7 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
             Ethernet120:
                 EndDevice: dev-sn2700-01
                 EndPort: Ethernet1/31
-                Bandwidth: 100000
+                Bandwidth: 25000
                 VlanID: 1711
                 VlanMode: Access
             Ethernet124:
