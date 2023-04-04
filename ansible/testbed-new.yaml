@@ -591,193 +591,193 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
         interfaces: # DUT/ start device
             Ethernet0:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/1
+                EndPort: Eth1/1
                 Bandwidth: 100000
                 VlanID: 1681
                 VlanMode: Access
             Ethernet4:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/2
+                EndPort: Eth1/2
                 Bandwidth: 100000
                 VlanID: 1682
                 VlanMode: Access
             Ethernet8:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/3
+                EndPort: Eth1/3
                 Bandwidth: 100000
                 VlanID: 1683
                 VlanMode: Access
             Ethernet12:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/4
+                EndPort: Eth1/4
                 Bandwidth: 100000
                 VlanID: 1684
                 VlanMode: Access
             Ethernet16:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/5
+                EndPort: Eth1/5
                 Bandwidth: 100000
                 VlanID: 1685
                 VlanMode: Access
             Ethernet20:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/6
+                EndPort: Eth1/6
                 Bandwidth: 100000
                 VlanID: 1686
                 VlanMode: Access
             Ethernet24:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/7
+                EndPort: Eth1/7
                 Bandwidth: 100000
                 VlanID: 1687
                 VlanMode: Access
             Ethernet28:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/8
+                EndPort: Eth1/8
                 Bandwidth: 100000
                 VlanID: 1688
                 VlanMode: Access
             Ethernet32:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/9
+                EndPort: Eth1/9
                 Bandwidth: 100000
                 VlanID: 1689
                 VlanMode: Access
             Ethernet36:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/10
+                EndPort: Eth1/10
                 Bandwidth: 100000
                 VlanID: 1690
                 VlanMode: Access
             Ethernet40:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/11
+                EndPort: Eth1/11
                 Bandwidth: 100000
                 VlanID: 1691
                 VlanMode: Access
             Ethernet44:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/12
+                EndPort: Eth1/12
                 Bandwidth: 100000
                 VlanID: 1692
                 VlanMode: Access
             Ethernet48:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/13
+                EndPort: Eth1/13
                 Bandwidth: 100000
                 VlanID: 1693
                 VlanMode: Access
             Ethernet52:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/14
+                EndPort: Eth1/14
                 Bandwidth: 10000
                 VlanID: 1694
                 VlanMode: Access
             Ethernet56:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/15
+                EndPort: Eth1/15
                 Bandwidth: 100000
                 VlanID: 1695
                 VlanMode: Access
             Ethernet60:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/16
+                EndPort: Eth1/16
                 Bandwidth: 100000
                 VlanID: 1696
                 VlanMode: Access
             Ethernet64:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/17
+                EndPort: Eth1/17
                 Bandwidth: 100000
                 VlanID: 1697
                 VlanMode: Access
             Ethernet68:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/18
+                EndPort: Eth1/18
                 Bandwidth: 100000
                 VlanID: 1698
                 VlanMode: Access
             Ethernet72:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/19
+                EndPort: Eth1/19
                 Bandwidth: 100000
                 VlanID: 1699
                 VlanMode: Access
             Ethernet76:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/20
+                EndPort: Eth1/20
                 Bandwidth: 100000
                 VlanID: 1700
                 VlanMode: Access
             Ethernet80:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/21
+                EndPort: Eth1/21
                 Bandwidth: 100000
                 VlanID: 1701
                 VlanMode: Access
             Ethernet84:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/22
+                EndPort: Eth1/22
                 Bandwidth: 100000
                 VlanID: 1702
                 VlanMode: Access
             Ethernet88:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/23
+                EndPort: Eth1/23
                 Bandwidth: 100000
                 VlanID: 1703
                 VlanMode: Access
             Ethernet92:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/24
+                EndPort: Eth1/24
                 Bandwidth: 100000
                 VlanID: 1704
                 VlanMode: Access
             Ethernet96:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/25
+                EndPort: Eth1/25
                 Bandwidth: 100000
                 VlanID: 1705
                 VlanMode: Access
             Ethernet100:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/26
+                EndPort: Eth1/26
                 Bandwidth: 100000
                 VlanID: 1706
                 VlanMode: Access
             Ethernet104:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/27
+                EndPort: Eth1/27
                 Bandwidth: 100000
                 VlanID: 1707
                 VlanMode: Access
             Ethernet108:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/28
+                EndPort: Eth1/28
                 Bandwidth: 100000
                 VlanID: 1708
                 VlanMode: Access
             Ethernet112:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/29
+                EndPort: Eth1/29
                 Bandwidth: 100000
                 VlanID: 1709
                 VlanMode: Access
             Ethernet116:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/30
+                EndPort: Eth1/30
                 Bandwidth: 100000
                 VlanID: 1710
                 VlanMode: Access
             Ethernet120:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/31
+                EndPort: Eth1/31
                 Bandwidth: 25000
                 VlanID: 1711
                 VlanMode: Access
             Ethernet124:
                 EndDevice: dev-sn2700-01
-                EndPort: Ethernet1/32/2
+                EndPort: Eth1/32/2
                 Bandwidth: 25000
                 VlanID: 1712
                 VlanMode: Access
