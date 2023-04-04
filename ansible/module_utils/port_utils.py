@@ -166,8 +166,40 @@ def get_port_alias_to_name_map(hwsku, asic_name=None):
                 port_alias_to_name_map["Ethernet%d/1" % i] = "Ethernet%d" % ((i - 49) * 4 + 48)
         # todo(adovhan) use hardcoded mapping in case 'split' is using
         elif hwsku == "Accton-AS7712-32X":
-            for i in range(1, 33):
-                port_alias_to_name_map["hundredGigE%d" % i] = "Ethernet%d" % ((i - 1) * 4)
+            # for i in range(1, 33):
+            #     port_alias_to_name_map["hundredGigE%d" % i] = "Ethernet%d" % ((i - 1) * 4)
+            port_alias_to_name_map["hundredGigE1"] = "Ethernet0"
+            port_alias_to_name_map["hundredGigE2"] = "Ethernet4"
+            port_alias_to_name_map["hundredGigE3"] = "Ethernet8"
+            port_alias_to_name_map["hundredGigE4"] = "Ethernet12"
+            port_alias_to_name_map["hundredGigE5"] = "Ethernet16"
+            port_alias_to_name_map["hundredGigE6"] = "Ethernet20"
+            port_alias_to_name_map["hundredGigE7"] = "Ethernet24"
+            port_alias_to_name_map["hundredGigE8"] = "Ethernet28"
+            port_alias_to_name_map["hundredGigE9"] = "Ethernet32"
+            port_alias_to_name_map["hundredGigE10"] = "Ethernet36"
+            port_alias_to_name_map["hundredGigE11"] = "Ethernet40"
+            port_alias_to_name_map["hundredGigE12"] = "Ethernet44"
+            port_alias_to_name_map["hundredGigE13"] = "Ethernet48"
+            port_alias_to_name_map["hundredGigE14"] = "Ethernet52"
+            port_alias_to_name_map["hundredGigE15"] = "Ethernet56"
+            port_alias_to_name_map["hundredGigE16"] = "Ethernet60"
+            port_alias_to_name_map["hundredGigE17"] = "Ethernet64"
+            port_alias_to_name_map["hundredGigE18"] = "Ethernet68"
+            port_alias_to_name_map["hundredGigE19"] = "Ethernet72"
+            port_alias_to_name_map["hundredGigE20"] = "Ethernet76"
+            port_alias_to_name_map["hundredGigE21"] = "Ethernet80"
+            port_alias_to_name_map["hundredGigE22"] = "Ethernet84"
+            port_alias_to_name_map["hundredGigE23"] = "Ethernet88"
+            port_alias_to_name_map["hundredGigE24"] = "Ethernet92"
+            port_alias_to_name_map["hundredGigE25"] = "Ethernet96"
+            port_alias_to_name_map["hundredGigE26"] = "Ethernet100"
+            port_alias_to_name_map["hundredGigE27"] = "Ethernet104"
+            port_alias_to_name_map["hundredGigE28"] = "Ethernet108"
+            port_alias_to_name_map["hundredGigE29"] = "Ethernet112"
+            port_alias_to_name_map["hundredGigE30"] = "Ethernet116"
+            port_alias_to_name_map["hundredGigE31"] = "Ethernet120"
+            port_alias_to_name_map["hundredGigE32"] = "Ethernet124"
         elif hwsku == "Accton-AS7726-32X":
             for i in range(1, 33):
                 port_alias_to_name_map["hundredGigE%d" % i] = "Ethernet%d" % ((i - 1) * 4)
