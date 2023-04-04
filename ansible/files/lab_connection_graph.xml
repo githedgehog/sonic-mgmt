@@ -38,7 +38,7 @@
       <DeviceInterfaceLink BandWidth="100000" EndDevice="dev-sn2700-01" EndPort="Eth1/30" StartDevice="dev-as7712-32x-01" StartPort="Ethernet116"/>
       <DeviceInterfaceLink BandWidth="100000" EndDevice="dev-sn2700-01" EndPort="Eth1/31" StartDevice="dev-as7712-32x-01" StartPort="Ethernet120"/>
       <DeviceInterfaceLink BandWidth="25000" EndDevice="dev-sn2700-01" EndPort="Eth1/32/2" StartDevice="dev-as7712-32x-01" StartPort="Ethernet124"/>
-      <DeviceInterfaceLink BandWidth="25000" EndDevice="str-acs-serv-01" EndPort="ens3f1" StartDevice="dev-sn2700-01" StartPort="Ethernet1/32/1"/>
+      <DeviceInterfaceLink BandWidth="25000" EndDevice="str-acs-serv-01" EndPort="ens3f1" StartDevice="dev-sn2700-01" StartPort="Eth1/32/1"/>
     </DeviceInterfaceLinks>
   </PhysicalNetworkGraphDeclaration>
   <DataPlaneGraph>
@@ -70,18 +70,18 @@
       <InterfaceVlan mode="Access" portname="Eth1/19" vlanids="1699"/>
       <InterfaceVlan mode="Access" portname="Eth1/20" vlanids="1700"/>
       <InterfaceVlan mode="Access" portname="Eth1/21" vlanids="1701"/>
-      <InterfaceVlan mode="Access" portname="Eth1/21" vlanids="1702"/>
-      <InterfaceVlan mode="Access" portname="Eth1/22" vlanids="1703"/>
-      <InterfaceVlan mode="Access" portname="Eth1/23" vlanids="1704"/>
-      <InterfaceVlan mode="Access" portname="Eth1/24" vlanids="1705"/>
-      <InterfaceVlan mode="Access" portname="Eth1/25" vlanids="1706"/>
-      <InterfaceVlan mode="Access" portname="Eth1/26" vlanids="1707"/>
-      <InterfaceVlan mode="Access" portname="Eth1/27" vlanids="1708"/>
-      <InterfaceVlan mode="Access" portname="Eth1/28" vlanids="1709"/>
-      <InterfaceVlan mode="Access" portname="Eth1/29" vlanids="1710"/>
-      <InterfaceVlan mode="Access" portname="Eth1/30" vlanids="1711"/>
-      <InterfaceVlan mode="Access" portname="Eth1/31/2" vlanids="1712"/>
-      <InterfaceVlan mode="Trunk" portname="Eth1/31/1" vlanids="1681-1712"/>
+      <InterfaceVlan mode="Access" portname="Eth1/22" vlanids="1702"/>
+      <InterfaceVlan mode="Access" portname="Eth1/23" vlanids="1703"/>
+      <InterfaceVlan mode="Access" portname="Eth1/24" vlanids="1704"/>
+      <InterfaceVlan mode="Access" portname="Eth1/25" vlanids="1705"/>
+      <InterfaceVlan mode="Access" portname="Eth1/26" vlanids="1706"/>
+      <InterfaceVlan mode="Access" portname="Eth1/27" vlanids="1707"/>
+      <InterfaceVlan mode="Access" portname="Eth1/28" vlanids="1708"/>
+      <InterfaceVlan mode="Access" portname="Eth1/29" vlanids="1709"/>
+      <InterfaceVlan mode="Access" portname="Eth1/30" vlanids="1710"/>
+      <InterfaceVlan mode="Access" portname="Eth1/31" vlanids="1711"/>
+      <InterfaceVlan mode="Access" portname="Eth1/32/2" vlanids="1712"/>
+      <InterfaceVlan mode="Trunk" portname="Eth1/32/1" vlanids="1681-1712"/>
     </DevicesL2Info>
     <DevicesL3Info Hostname="str-acs-serv-01">
       <ManagementIPInterface Name="ManagementIp" Prefix="10.251.0.245/23"/>
