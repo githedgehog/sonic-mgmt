@@ -10,7 +10,7 @@ import yaml
 from tests.common.helpers.assertions import pytest_assert
 
 logger = logging.getLogger(__name__)
-path_to_metadata = "/etc/sonic/build_metadata.yaml"
+path_to_metadata = "/etc/sonic/build_metadata.yml"
 pytestmark = [
     pytest.mark.topology('any'),
     pytest.mark.device_type('vs')
@@ -62,17 +62,17 @@ def setup(duthosts, rand_one_dut_hostname):
 
 @pytest.mark.parametrize("name", sonic_ctrs.keys())
 def test_container_state(setup, name):
-    """Verify container state according to build_metadata.yaml file on a DUT
+    """Verify container state according to build_metadata.yml file on a DUT
         e.i: INCLUDE_SNMP: n -> container is not running
         INCLUDE_SNMP: y -> container is running.
-        In case, no build_metadata.yaml, then all containers are running"""
+        In case, no build_metadata.yml, then all containers are running"""
 
 
     config = setup['config']
     if config is False:
-        pytest.skip("SKIP: no build_metadata.yaml file. Cannot check expected state.")
+        pytest.skip("SKIP: no build_metadata.yml file. Cannot check expected state.")
 
-    with allure.step('When: Read build_metadata.yaml file from DUT and get expected state of container'):
+    with allure.step('When: Read build_metadata.yml file from DUT and get expected state of container'):
         expected_state = True if config[sonic_ctrs[name]['build_flag']] == "y" else False
     with allure.step('Then: Actual state is the same as expected'):
         actual_state = sonic_ctrs[name]['status']
@@ -81,7 +81,7 @@ def test_container_state(setup, name):
 
 
 def test_bgp_smoke(setup):
-    """Verify that 'bgdp' process is running according to INCLUDE_FRR_BGP (build_metadata.yaml).
+    """Verify that 'bgdp' process is running according to INCLUDE_FRR_BGP (build_metadata.yml).
         If so, make basic BGP configuration and verify that configuration is applied"""
 
     with allure.step('Setup: Get DUT host and init bgp conf'):
@@ -136,7 +136,7 @@ def test_bgp_smoke(setup):
 
 
 def test_bfd_smoke(setup):
-    """Verify that 'bfdd' process is running according to INCLUDE_FRR_BFD (build_metadata.yaml).
+    """Verify that 'bfdd' process is running according to INCLUDE_FRR_BFD (build_metadata.yml).
         If so, make basic BFD configuration and verify that configuration is applied"""
 
     with allure.step('Setup: Get DUT host'):
@@ -147,7 +147,7 @@ def test_bfd_smoke(setup):
     with allure.step('And: Verify BFD process according to metadata from DUT, '
                      'go to the next verification if feature is running. Otherwise exit.'):
         if not config:
-            pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, bfdd is not running by default.")
+            pytest.skip("SKIP: no build_metadata.yml; it can be a community image, bfdd is not running by default.")
         elif not sonic_ctrs['bgp']['status']:
             pytest_assert(not is_bfdd_proc, "There is running bfdd process, but shouldn't be.")
         elif config and config['INCLUDE_FRR_BFD'] == 'n':
@@ -188,7 +188,7 @@ def test_bfd_smoke(setup):
 
 
 def test_vrrp_smoke(setup):
-    """Verify that 'vrrpd' process is running according to INCLUDE_FRR_VRRP (build_metadata.yaml).
+    """Verify that 'vrrpd' process is running according to INCLUDE_FRR_VRRP (build_metadata.yml).
         If so, make basic VRRP configuration and verify that configuration is applied"""
 
     with allure.step('Setup: Get DUT host'):
@@ -199,7 +199,7 @@ def test_vrrp_smoke(setup):
     with allure.step('And: Verify VRRP process according to metadata from DUT, '
                      'go to the next verification if feature is running. Otherwise exit.'):
         if not config:
-            pytest.skip("SKIP: no build_metadata.yaml; it can be a community image, 'vrrpd' is not running by default.")
+            pytest.skip("SKIP: no build_metadata.yml; it can be a community image, 'vrrpd' is not running by default.")
         elif config and config['INCLUDE_FRR_VRRP'] == 'n':
             pytest_assert(not is_vrrpd_proc, "There is running 'vrrpd' process, but shouldn't be.")
         elif config and config['INCLUDE_FRR_VRRP'] == 'y':
@@ -242,7 +242,7 @@ def test_vrrp_smoke(setup):
 
 
 def test_syslog_smoke(setup):
-    """Verify that 'rsyslogd' process is running according to INCLUDE_SYSLOG (build_metadata.yaml).
+    """Verify that 'rsyslogd' process is running according to INCLUDE_SYSLOG (build_metadata.yml).
         If so, make basic syslog configuration and verify that configuration is applied"""
 
     with allure.step('Setup: Get DUT host'):
@@ -275,7 +275,7 @@ def test_syslog_smoke(setup):
 
 
 def test_database_smoke(setup):
-    """Verify that 'database' container state according to INCLUDE_DATABASE (build_metadata.yaml).
+    """Verify that 'database' container state according to INCLUDE_DATABASE (build_metadata.yml).
         Check 'docker events' and make sure that container is stable (no restart).
         Check that config_db exist in redis."""
 
@@ -300,7 +300,7 @@ def test_database_smoke(setup):
 
 
 def test_syncd_smoke(setup):
-    """Verify that 'syncd' container state according to INCLUDE_SYNCD (build_metadata.yaml).
+    """Verify that 'syncd' container state according to INCLUDE_SYNCD (build_metadata.yml).
         Check 'docker events' and make sure that container is stable (no restart).
         Verify that 'syncd' process is running."""
 
@@ -321,7 +321,7 @@ def test_syncd_smoke(setup):
 
 
 def test_swss_smoke(setup):
-    """Verify that 'swss' container state according to INCLUDE_SWSS (build_metadata.yaml).
+    """Verify that 'swss' container state according to INCLUDE_SWSS (build_metadata.yml).
         Check 'docker events' and make sure that container is stable (no restart).
         Verify that 'orchagent' process is running."""
 
@@ -342,7 +342,7 @@ def test_swss_smoke(setup):
 
 
 def test_pmon_smoke(setup):
-    """Verify that 'pmon' container state according to INCLUDE_PMON (build_metadata.yaml).
+    """Verify that 'pmon' container state according to INCLUDE_PMON (build_metadata.yml).
         Check 'docker events' and make sure that container is stable (no restart)."""
 
     with allure.step('Setup: Get DUT host and metadata if any'):
@@ -359,7 +359,7 @@ def test_pmon_smoke(setup):
 
 
 def test_nat_smoke(setup):
-    """Verify that 'nat' feature is running according to INCLUDE_NAT (build_metadata.yaml).
+    """Verify that 'nat' feature is running according to INCLUDE_NAT (build_metadata.yml).
         If so, make basic NAT configuration and verify that configuration is applied"""
 
     with allure.step('Setup: Get DUT host and metadata if any'):
@@ -402,7 +402,7 @@ def test_nat_smoke(setup):
 
 
 def test_radius_smoke(setup):
-    """Verify that 'radius' feature is running according to INCLUDE_RADIUS (build_metadata.yaml).
+    """Verify that 'radius' feature is running according to INCLUDE_RADIUS (build_metadata.yml).
         If so, make basic RADIUS configuration and verify that configuration is applied"""
 
     with allure.step('Setup: Get DUT host and metadata if any'):
@@ -445,7 +445,7 @@ def test_radius_smoke(setup):
 
 
 def test_ntp_smoke(setup):
-    """Verify that 'ntp' feature is running according to INCLUDE_NTP (build_metadata.yaml).
+    """Verify that 'ntp' feature is running according to INCLUDE_NTP (build_metadata.yml).
         If so, make basic NTP feature checks and verify"""
 
     with allure.step('Setup: Get DUT host and metadata if any'):
@@ -481,7 +481,7 @@ def test_ntp_smoke(setup):
 
 
 def test_snmp_smoke(setup, loganalyzer):
-    """Verify that 'snmp' container is running according to INCLUDE_SNMP (build_metadata.yaml).
+    """Verify that 'snmp' container is running according to INCLUDE_SNMP (build_metadata.yml).
         If so, make basic SNMP configuration and verify that configuration is applied"""
 
     with allure.step('Setup: Get DUT host and metadata if any'):
@@ -533,7 +533,7 @@ def test_snmp_smoke(setup, loganalyzer):
 
 
 def test_lldp_smoke(setup):
-    """Verify that 'LLDP' container is running according to INCLUDE_LLDP (build_metadata.yaml).
+    """Verify that 'LLDP' container is running according to INCLUDE_LLDP (build_metadata.yml).
         Check 'docker events' and make sure that container is stable (no restart).
         Verify that 'lldpd' process is running."""
 
@@ -561,7 +561,7 @@ def test_lldp_smoke(setup):
 
 
 def test_mgmt_framework_smoke(setup):
-    """Verify that 'mgmt framework' container is running according to INCLUDE_MGMT_FRAMEWORK (build_metadata.yaml).
+    """Verify that 'mgmt framework' container is running according to INCLUDE_MGMT_FRAMEWORK (build_metadata.yml).
         Check 'docker events' and make sure that container is stable (no restart)."""
 
     with allure.step('Setup: Get DUT host and metadata if any.'):
@@ -584,7 +584,7 @@ def test_mgmt_framework_smoke(setup):
 
 
 def test_restapi_smoke(setup):
-    """Verify that 'RESTAPI' container is running according to INCLUDE_RESTAPI (build_metadata.yaml).
+    """Verify that 'RESTAPI' container is running according to INCLUDE_RESTAPI (build_metadata.yml).
         Check 'docker events' and make sure that container is stable (no restart)."""
 
     with allure.step('Setup: Get DUT host and metadata if any.'):

@@ -8,7 +8,7 @@ import yaml
 import boto3
 import requests
 
-METADATA_FILENAME = "build_metadata.yaml"
+METADATA_FILENAME = "build_metadata.yml"
 
 
 def read_yaml(path):
@@ -30,7 +30,7 @@ def rename_directory(path_with_target, build_id):
 
 
 def create_metadata_symlink(path):
-    # find build_metadata.yaml file
+    # find build_metadata.yml file
     os.chdir(path)
     metadata_path = ""
     current_dir = "."
@@ -43,7 +43,7 @@ def create_metadata_symlink(path):
     if metadata_path != "":
         os.symlink(metadata_path, METADATA_FILENAME)
     else:
-        print("ERROR: no 'build_metadata.yaml' file inside '{}'.".format(path))
+        print("ERROR: no 'build_metadata.yml' file inside '{}'.".format(path))
         exit(1)
 
 

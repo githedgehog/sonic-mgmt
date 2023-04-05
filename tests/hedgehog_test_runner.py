@@ -51,7 +51,7 @@ def run_cmd_on_dut(testbed_data, cmd):
 
 def read_metadata(testbed_data):
     metadata = False
-    path_to_metadata = "/etc/sonic/build_metadata.yaml"
+    path_to_metadata = "/etc/sonic/build_metadata.yml"
     cmd = "cat {}".format(path_to_metadata)
     metadata_plain = run_cmd_on_dut(testbed_data, cmd)
     if metadata_plain:

@@ -87,7 +87,7 @@ def get_setup_session_info(session):
         ("ASIC", asic.findall(output)[0] if asic.search(output) else "")
     ])
 
-    path_to_metadata = "/etc/sonic/build_metadata.yaml"
+    path_to_metadata = "/etc/sonic/build_metadata.yml"
     cmd = "ansible -m command -i inventory {0} -a '/bin/bash -c \"if [ -e {1} ]; then cat {1}; else echo \'\'; fi\"'"\
         .format(host, path_to_metadata)
     output = subprocess.check_output(cmd, shell=True).decode('utf-8')
@@ -130,7 +130,7 @@ def get_time_stamp_str():
 
 def convert_build_metadata_to_dict(lst):
     """
-    This method return dict with build_metadata.yaml
+    This method return dict with build_metadata.yml
     Args:
         lst: output from ansible -m ... and split('\n')
     Returns:
