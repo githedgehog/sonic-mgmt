@@ -1,12 +1,14 @@
 import argparse
 import subprocess
 import sys
+import os
 
 import paramiko
 import yaml
 import json
 
 from pathlib import Path
+from hedgehog.add_layer_to_allure import add_layers
 
 FULL_REPORT_DIR_PATH = ""
 MAPPING_TEST_TO_GROUP_FILE = "./hedgehog/mapping_test_to_group.yaml"
@@ -159,33 +161,10 @@ def build_run_test_cmd(testbed_data, test_list, report_dir_name):
 
 
 def update_allure_report(testbed_data):
-    unmapped_tests = []
+    # add layer labels
     unmapped_tc_file = "{}/{}".format(FULL_REPORT_DIR_PATH, testbed_data['testbed']['unmapped_tc_file'])
-    tests_to_grup_map = read_yaml(MAPPING_TEST_TO_GROUP_FILE)
-
-    # iterate over files with test results in the Allure directory
-    files = Path(FULL_REPORT_DIR_PATH).glob('*result.json')
-    for file in files:
-        test_info = read_json(file)
-        layer_label = {"name" : "layer"}
-
-        # Find layer label for test in test_to_group.yaml file
-        # If test doesn't find, layer label will be set to "Default" value
-        if test_info["fullName"] in tests_to_grup_map:
-            layer_label["value"] = tests_to_grup_map[test_info["fullName"]]
-        else:
-            layer_label["value"] ="Default"
-            unmapped_tests.append(test_info["fullName"])
-
-        test_info["labels"].append(layer_label)
-
-        #rewrite updated JSON
-        with open(file, "w") as outfile:
-            json.dump(test_info, outfile)
-
-        #write list with unmapped tests to file
-        with open(unmapped_tc_file, 'w') as outfile:
-            outfile.write('\n'.join(unmapped_tests))
+    add_layers(report_dir_path=FULL_REPORT_DIR_PATH, test_to_layer_map=MAPPING_TEST_TO_GROUP_FILE,
+               unmapped_test_path=unmapped_tc_file)
 
 
 def run_cmd(cmd, print_only):
