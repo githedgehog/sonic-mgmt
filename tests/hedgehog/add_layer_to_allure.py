@@ -35,7 +35,7 @@ def add_layers(report_dir_path, test_to_layer_map, unmapped_test_path=None):
         return -1
 
     unmapped_tests = []
-    tests_to_grup_map = read_yaml(test_to_layer_map)
+    tests_to_group_map = read_yaml(test_to_layer_map)
 
     # iterate over files with test results in the Allure directory
     files = Path(report_dir_path).glob('*result.json')
@@ -45,8 +45,8 @@ def add_layers(report_dir_path, test_to_layer_map, unmapped_test_path=None):
 
         # Find layer label for test in test_to_group.yaml file
         # If test doesn't find, layer label will be set to "Default" value
-        if test_info["fullName"] in tests_to_grup_map:
-            layer_label["value"] = tests_to_grup_map[test_info["fullName"]]
+        if test_info["fullName"] in tests_to_group_map:
+            layer_label["value"] = tests_to_group_map[test_info["fullName"]]
         else:
             layer_label["value"] ="Default"
             unmapped_tests.append(test_info["fullName"])
