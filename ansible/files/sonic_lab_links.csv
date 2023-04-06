@@ -30,5 +30,5 @@ dev-as7712-32x-01,Ethernet108,dev-sn2700-01,Eth1/28,100000,1708,Access
 dev-as7712-32x-01,Ethernet112,dev-sn2700-01,Eth1/29,100000,1709,Access
 dev-as7712-32x-01,Ethernet116,dev-sn2700-01,Eth1/30,100000,1710,Access
 dev-as7712-32x-01,Ethernet120,dev-sn2700-01,Eth1/31,100000,1711,Access
-dev-as7712-32x-01,Ethernet124,dev-sn2700-01,Eth1/32/2,25000,1712,Access
+dev-as7712-32x-01,Ethernet124,dev-sn2700-01,Eth1/32/2,100000,1712,Access
 dev-sn2700-01,Eth1/32/1,str-acs-serv-01,ens3f1,25000,1681-1712,Trunk

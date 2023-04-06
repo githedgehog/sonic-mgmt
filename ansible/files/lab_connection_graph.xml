@@ -37,7 +37,7 @@
       <DeviceInterfaceLink BandWidth="100000" EndDevice="dev-sn2700-01" EndPort="Eth1/29" StartDevice="dev-as7712-32x-01" StartPort="Ethernet112"/>
       <DeviceInterfaceLink BandWidth="100000" EndDevice="dev-sn2700-01" EndPort="Eth1/30" StartDevice="dev-as7712-32x-01" StartPort="Ethernet116"/>
       <DeviceInterfaceLink BandWidth="100000" EndDevice="dev-sn2700-01" EndPort="Eth1/31" StartDevice="dev-as7712-32x-01" StartPort="Ethernet120"/>
-      <DeviceInterfaceLink BandWidth="25000" EndDevice="dev-sn2700-01" EndPort="Eth1/32/2" StartDevice="dev-as7712-32x-01" StartPort="Ethernet124"/>
+      <DeviceInterfaceLink BandWidth="100000" EndDevice="dev-sn2700-01" EndPort="Eth1/32/2" StartDevice="dev-as7712-32x-01" StartPort="Ethernet124"/>
       <DeviceInterfaceLink BandWidth="25000" EndDevice="str-acs-serv-01" EndPort="ens3f1" StartDevice="dev-sn2700-01" StartPort="Eth1/32/1"/>
     </DeviceInterfaceLinks>
   </PhysicalNetworkGraphDeclaration>

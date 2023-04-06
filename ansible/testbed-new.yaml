@@ -772,13 +772,13 @@ topology:                               # source: sonic-mgmt/ansible/files/sonic
             Ethernet120:
                 EndDevice: dev-sn2700-01
                 EndPort: Eth1/31
-                Bandwidth: 25000
+                Bandwidth: 100000
                 VlanID: 1711
                 VlanMode: Access
             Ethernet124:
                 EndDevice: dev-sn2700-01
                 EndPort: Eth1/32/2
-                Bandwidth: 25000
+                Bandwidth: 100000
                 VlanID: 1712
                 VlanMode: Access
 
