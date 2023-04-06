@@ -108,11 +108,10 @@ devices:
             enable_password:
         ansible:
             ansible_host: 192.168.88.246/24          # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
-            #todo(adovhan) set correct creds
-            ansible_ssh_user: user                   # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
-            ansible_ssh_pass: password               # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
-            fanout_sonic_user: admin                 # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
-            fanout_sonic_password: password          # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml
+            ansible_ssh_user: user                   # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml  # do not need to set creds, se use static fanout config.
+            ansible_ssh_pass: password               # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml  # if we want to use dynamic, then update ansible/roles/fanout/tasks/fanout_eos.yml
+            fanout_sonic_user: admin                 # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml  # and update corresponding fanout template
+            fanout_sonic_password: password          # source: sonic-mgmt/ansible/group_vars/fanout/secrets.yml  # and update ansible/group_vars/fanout/secrets.yml
 
     str-msn2700-01:                         
         device_type: DevSonic                       # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv      
@@ -178,7 +177,7 @@ devices:
             username:                 
             password:               
         ansible:
-            ansible_host: 10.250.0.1/16           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv # todo(adovhan) set correct ip (testServer)
+            ansible_host: 10.250.0.1/16           # source: sonic-mgmt/ansible/files/sonic_lab_devices-github.csv
             ansible_ssh_pass: password              # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             ansible_become_pass: password           # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
             sonicadmin_user: admin                  # source: sonic-mgmt/ansible/group_vars/lab/secrets.yml
@@ -252,7 +251,7 @@ host_vars:
     str-acs-serv-01:
         mgmt_bridge: br1                # source: sonic-mgmt/host_vars
         mgmt_prefixlen: 16              # source: sonic-mgmt/host_vars
-        mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars #todo(adovhan) set correct ip
+        mgmt_gw: 10.250.0.1             # source: sonic-mgmt/host_vars
         external_port: ens3f0           # source: sonic-mgmt/host_vars
 
 # veos_groups is a dictionary that contains all veos groups
@@ -465,7 +464,7 @@ testbed:
         topo: t0                                            # source: sonic-mgmt/ansible/testbed.csv
         ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
         ptf: ptf_vms1-1
-        ptf_ip: 10.250.128.196/16                           # source: sonic-mgmt/ansible/testbed.csv todo(adovhan) set correcr ip
+        ptf_ip: 10.250.128.196/16                           # source: sonic-mgmt/ansible/testbed.csv
         server: server_1                                    # source: sonic-mgmt/ansible/testbed.csv
         vm_base: VM0100                                     # source: sonic-mgmt/ansible/testbed.csv
         dut: dev-as7712-32x-01                               # source: sonic-mgmt/ansible/testbed.csv
@@ -586,7 +585,6 @@ testbed:
 # topology is used to generate sonic_lab_links
 # topology dictionary does not cross reference with other files 
 topology:                               # source: sonic-mgmt/ansible/files/sonic_lab_links.csv
-    # todo(adovhan) add links (dut, fanout)
     dev-as7712-32x-01: # source: sonic-mgmt/ansible/files/sonic_lab_links.csv  # ports that goes to TESTBED SERVER
         interfaces: # DUT/ start device
             Ethernet0:

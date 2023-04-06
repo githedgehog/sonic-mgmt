@@ -1,5 +1,4 @@
 ---
-#todo(adovhan) set correct creds
 ansible_user: hhtestbed
 ansible_password: HH.Labs
 ansible_become_password: HH.Labs
