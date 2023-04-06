@@ -47,10 +47,23 @@ all:
         server_1:
         server_2:
 
+    sonic:
+      vars:
+        mgmt_subnet_mask_length: 24
+        ansible_connection: multi_passwd_ssh
+        ansible_altpassword: YourPaSsWoRd
+      hosts:
+        dut_cls_dx010-01:
+          ansible_host: 10.10.1.65
+          type: DUT
+          hwsku: Seastone-DX010
+          ansible_password: YourPaSsWoRd
+          ansible_user: admin
+
 vm_host_1:
   hosts:
     STR-ACS-SERV-01:
-      ansible_host: 10.251.0.245
+      ansible_host: 10.250.7.44
 
 vm_host_2:
   hosts:

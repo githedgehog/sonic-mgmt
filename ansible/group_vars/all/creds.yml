@@ -17,6 +17,7 @@ cisco_password: ""
 
 
 sonic_login: "admin"
+# todo(adovhan) update creds sonic default
 sonic_default_passwords:
  - "YourPaSsWoRd"
  - "password"

@@ -1,8 +1,16 @@
 Hostname,ManagementIp,HwSku,Type,Protocol
-dev-msn2700-01,10.251.0.188/23,Mellanox-2700,DevSonic,
-dev-7260-10,10.251.0.13/23,Arista-7260QX-64,FanoutLeaf,
-dev-7260-11,10.251.0.234/23,Arista-7260QX-64,FanoutRoot,
-dev-acs-serv-01,10.251.0.245/23,TestServ,Server,
-pdu-1,192.168.9.2,Apc,Pdu,snmp
-pdu-2,192.168.9.3,Sentry,Pdu,snmp
-console-1,192.168.10.1,Cisco,ConsoleServer,ssh
+dut_cls_dx010-01,10.10.1.65/22,Seastone-DX010,DevSonic,
+fnt_csc_c3132q-01,10.10.0.21/22,cisco-Nexus3000-C3132Q,FanoutLeaf,
+str-acs-serv-01,10.250.7.44/16,TestServ,Server,
+# dev-msn2700-01,10.251.0.188/23,Mellanox-2700,DevSonic,
+# dev-7260-10,10.251.0.13/23,Arista-7260QX-64,FanoutLeaf,
+# dev-7260-11,10.251.0.234/23,Arista-7260QX-64,FanoutRoot,
+# dev-acs-serv-01,10.251.0.245/23,TestServ,Server,
+# pdu-1,192.168.9.2,Apc,Pdu,snmp
+# pdu-2,192.168.9.3,Sentry,Pdu,snmp
+# console-1,192.168.10.1,Cisco,ConsoleServer,ssh
+
+# todo(adovhan) remove
+# hostname_dut -> dut_cls_dx010-01
+# C3132Q-1 -> fnt_csc_c3132q-01
+# hostname_testbed -> srv-dll-<model>-01 -> str-acs-serv-01

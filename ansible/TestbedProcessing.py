@@ -137,6 +137,7 @@ def makeMain(data, outfile):
         toWrite.write( "supported_vm_types: [ 'veos', 'ceos', 'vsonic' ]\n" ),
         yaml.dump(dictData, stream=toWrite, default_flow_style=False)
         toWrite.write("# proxy\n")
+        # todo(adovhan) potential code for removing, we don't use proxy
         yaml.dump(proxy, stream=toWrite, default_flow_style=False)
 
 

@@ -12,7 +12,7 @@
             server: "{{ inventory_hostname|lower }}"
             server_port: "{{ external_port }}"
 
-        - set_fact: root_fanout_connect=true
+        - set_fact: root_fanout_connect=false
           when: root_fanout_connect is not defined
 
         - debug: msg="Connect {{ server }}:{{ server_port }} to {{ dut }}"
@@ -27,7 +27,7 @@
         - set_fact: userid={{ calling_username.stdout }}
 
         - set_fact: connect_leaf=false
-
+#        todo(adovhan) potential code to remove, use static config for fanout
         - include_tasks: roles/fanout/tasks/rootfanout_connect.yml
           when: root_fanout_connect|bool == true
 
