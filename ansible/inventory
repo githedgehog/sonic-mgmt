@@ -30,7 +30,7 @@ sonic_latest:
       type: kvm
       hwsku: Force10-S6000
       serial_port: 9000
-      ansible_password: password
+      ansible_password: YourPaSsWoRd
       ansible_user: admin
     switch1:
       ansible_host: 10.0.0.100
