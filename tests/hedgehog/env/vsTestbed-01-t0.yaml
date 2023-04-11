@@ -2,7 +2,7 @@
 "testbed":
   "dut_ip": "10.250.0.101"
   "username": "admin"
-  "password": "password"
+  "password": "YourPaSsWoRd"
   "conf_name": "vms-kvm-t0"
   "topo": "t0,any"
   "host_pattern": "vlab-01"

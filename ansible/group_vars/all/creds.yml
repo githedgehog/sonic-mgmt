@@ -20,7 +20,7 @@ sonic_login: "admin"
 sonic_default_passwords:
  - "YourPaSsWoRd"
  - "password"
-sonic_password: "password"
+sonic_password: "YourPaSsWoRd" # default password for virtual DUT
 
 k8s_master_login: "ubuntu"
 k8s_master_password: "use_own_value"
