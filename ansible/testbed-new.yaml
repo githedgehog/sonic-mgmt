@@ -460,7 +460,7 @@ veos:
 # testbed dictionary does not cross reference with other files 
 testbed:
     01-t0: # source: sonic-mgmt/ansible/testbed.csv
-        group-name: vms1-1                                 # source: sonic-mgmt/ansible/testbed.csv
+        group-name: vms1-t0                                 # source: sonic-mgmt/ansible/testbed.csv
         topo: t0                                            # source: sonic-mgmt/ansible/testbed.csv
         ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
         ptf: ptf_vms1-1
@@ -471,7 +471,7 @@ testbed:
         comment: Hedgehog T0 topology as7712-32x-01 Testbed 01
 
     01-t1: # source: sonic-mgmt/ansible/testbed.csv
-        group-name: vms1-1                                  # source: sonic-mgmt/ansible/testbed.csv
+        group-name: vms1-t1                                 # source: sonic-mgmt/ansible/testbed.csv
         topo: t1                                            # source: sonic-mgmt/ansible/testbed.csv
         ptf_image_name: docker-ptf                          # source: sonic-mgmt/ansible/testbed.csv
         ptf: ptf_vms1-1

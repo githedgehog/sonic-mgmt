@@ -1,7 +1,7 @@
 ---
 
 - conf-name: 01-t0
-  group-name: vms1-1
+  group-name: vms1-t0
   topo: t0
   ptf_image_name: docker-ptf
   ptf: ptf_vms1-1
@@ -16,7 +16,7 @@
   comment: Hedgehog T0 topology as7712-32x-01 Testbed 01
 
 - conf-name: 01-t1
-  group-name: vms1-1
+  group-name: vms1-t1
   topo: t1
   ptf_image_name: docker-ptf
   ptf: ptf_vms1-1
