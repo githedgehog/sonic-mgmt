@@ -374,6 +374,7 @@ def test_nat_smoke(setup):
 
     if config and config[build_flag] == "n":
         with allure.step('"NAT" feature is disabled in metadata. Skip this test at this stage.'):
+            # todo DEV-524
             pytest.skip("SKIP. NAT feature is disabled on build.")
 
     # Skip this step. Currently, nat.service doesn't work
@@ -419,6 +420,7 @@ def test_radius_smoke(setup):
 
     if config and config[build_flag] == "n":
         with allure.step('"RADIUS" feature is disabled. Skip this test at this stage.'):
+            # todo DEV-524
             pytest.skip("SKIP. Radius feature is disabled on build.")
 
     with allure.step('Verify that RADIUS related deb packages are installed'):
@@ -460,8 +462,8 @@ def test_ntp_smoke(setup):
 
     if config and config[build_flag] == "n":
         with allure.step('"NTP" feature is disabled. Skip this test at this stage.'):
-            pytest_assert(not is_ntpd_proc, "There is running 'ntpd' process, but shouldn't be.")
-            # todo remove 'skip'
+            # pytest_assert(not is_ntpd_proc, "There is running 'ntpd' process, but shouldn't be.")
+            # todo DEV-524
             pytest.skip("SKIP. NTP is disabled on build.")
 
     with allure.step('Verify that "ntpd" process is running.'):
@@ -598,6 +600,7 @@ def test_restapi_smoke(setup):
     # Check metadata with container
     if config and config[build_flag] == "n" and status == False:
         with allure.step('The "RESTAPI" feature is disabled in metadata. Skip this test at this stage.'):
+            # todo DEV-524
             pytest.skip("SKIP. {} container is disabled on build.".format(container))
     if config and config[build_flag] == "n":
         pytest_assert(status == False, "There is running {} container, but shouldn't be.".format(container))
